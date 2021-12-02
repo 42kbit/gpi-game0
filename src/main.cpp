@@ -15,6 +15,8 @@
 
 #include "Engine/GPI_Camera.h"
 
+#include "CMD_Input.h"
+
 struct Vertex
 {
     glm::vec3 position;
@@ -81,8 +83,7 @@ int main(){
     
     glm::vec3 eulerCamRotation = {0.f, 0.f, 0.f};
     
-    glm::vec2 inputDir = {0.f, 0.f};
-    glm::vec2 deltaMouse = {0.f, 0.f};
+    CMD_Input input = CMD_CreateInput();
 
     const float sensitivity = 0.01f;
     const float moveSpeed = 0.01f;
@@ -96,10 +97,9 @@ int main(){
         glm::radians(eulerCamRotation.y), 
         glm::radians(eulerCamRotation.z));
         
-        GPI_MoveCamera(&camera, camera.forward * moveSpeed * inputDir.y);
+        GPI_MoveCamera(&camera, camera.forward * moveSpeed * 0.f);
 
-        inputDir = {0.f, 0.f};
-        deltaMouse = {0.f, 0.f};
+        input.deltaMouse = {0.f, 0.f};
 
         glm::mat4 proj = GPI_GetCameraProjection(&camera, aspectRaito);
         glm::mat4 view = GPI_GetCameraView(&camera);
@@ -109,37 +109,12 @@ int main(){
             glBufferSubData(ubo.TYPE, sizeof(glm::mat4), sizeof(glm::mat4), &view);
         GPI_UnbindBuffer(&ubo);
 
-        while(SDL_PollEvent(&ev))
-        {
-            switch (ev.type)
-            {
-            case SDL_QUIT:
-                shouldClose = 1;
-                break;
-            
-            case SDL_KEYDOWN:
-            {
-                switch(ev.key.keysym.sym)
-                {
-                    case SDLK_ESCAPE:
-                    {
-                        shouldClose = 1;
-                        break;
-                    }
-                }
-                break;
-            }
-            case SDL_MOUSEMOTION:
-            {
-                deltaMouse.x += ev.motion.xrel;
-                deltaMouse.y += ev.motion.yrel;
-                break;
-            }
-            }
-        }
+        CMD_PollEvents(&input, &ev);
+        if(input.pressed[SDLK_ESCAPE])
+            shouldClose = 1;
 
-        eulerCamRotation.x += -deltaMouse.y * sensitivity;
-        eulerCamRotation.y += -deltaMouse.x * sensitivity;
+        eulerCamRotation.x += -input.deltaMouse.y * sensitivity;
+        eulerCamRotation.y += -input.deltaMouse.x * sensitivity;
 
         //rendering
         glClearColor(0,0,0,1);
