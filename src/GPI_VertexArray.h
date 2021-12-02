@@ -1,8 +1,8 @@
 #ifndef _HEADER__GPI_VERTEXARRAY
 #define _HEADER__GPI_VERTEXARRAY
 
-#include "GlWrappers/GPI_Buffer.h"
-#include "GlWrappers/GPI_VertexLayout.h"
+#include "GPI_Buffer.h"
+#include "GPI_VertexLayout.h"
 
 struct GPI_VertexArray
 {
