@@ -1,7 +1,7 @@
 #include "GPI_Shader.h"
 
-#include "Modules/GPI_FileReader.h"
-#include "Modules/GPI_ShaderCompiler.h"
+#include "GPI_FileReader.h"
+#include "GPI_ShaderCompiler.h"
 
 #include "glad/glad.h"
 

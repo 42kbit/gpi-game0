@@ -1,5 +1,5 @@
 #include "GPI_Texture.h"
-#include "Modules/GPI_TextureReader.h"
+#include "GPI_TextureReader.h"
 
 GPI_Texture GPI_CreateTexture(const char* path,
                                       uint32_t WRAP_MODE,
