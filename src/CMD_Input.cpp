@@ -7,26 +7,26 @@ CMD_Input CMD_CreateInput()
     return input;
 }
 
-void CMD_PollEvents(CMD_Input* target, SDL_Event* sdlEvent)
+void CMD_PollEvents(CMD_Input* target)
 {
-    while(SDL_PollEvent(sdlEvent))
+    while(SDL_PollEvent(&target->event))
     {
-        switch (sdlEvent->type)
+        switch (target->event.type)
         {
         case SDL_KEYDOWN:
         {
-            target->pressed[sdlEvent->key.keysym.sym] = true;
+            target->pressed[target->event.key.keysym.sym] = true;
             break;
         }
         case SDL_KEYUP:
         {
-            target->pressed[sdlEvent->key.keysym.sym] = false;
+            target->pressed[target->event.key.keysym.sym] = false;
             break;
         }
         case SDL_MOUSEMOTION:
         {
-            target->deltaMouse.x += sdlEvent->motion.xrel;
-            target->deltaMouse.y += sdlEvent->motion.yrel;
+            target->deltaMouse.x += target->event.motion.xrel;
+            target->deltaMouse.y += target->event.motion.yrel;
             break;
         }
         }

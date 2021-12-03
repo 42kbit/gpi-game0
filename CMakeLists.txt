@@ -7,6 +7,7 @@ project(${PROJECT_NAME})
 add_executable(${PROJECT_NAME} 
 src/main.cpp
 src/CMD_Input.cpp
+src/CMD_Window.cpp
 )
 
 add_subdirectory(external/gpi)

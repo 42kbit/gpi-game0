@@ -2,20 +2,18 @@
 #include "SDL.h"
 #include "glad/glad.h"
 
-#include "GlWrappers/GPI_Buffer.h"
-#include "GlWrappers/GPI_Shader.h"
-
-#include "GlWrappers/GPI_Texture.h"
-
-#include "GlWrappers/GPI_Renderer.h"
-#include "GlWrappers/GPI_VertexArray.h"
+#include "GPI_Buffer.h"
+#include "GPI_Shader.h"
+#include "GPI_Texture.h"
+#include "GPI_Renderer.h"
+#include "GPI_VertexArray.h"
+#include "GPI_Camera.h"
 
 #include <stddef.h>
 #include <iostream>
 
-#include "Engine/GPI_Camera.h"
-
 #include "CMD_Input.h"
+#include "CMD_Window.h"
 
 struct Vertex
 {
@@ -28,6 +26,8 @@ const uint32_t WIDTH = 800, HEIGHT = 600;
 const float aspectRaito = (float)WIDTH / HEIGHT;
 const uint32_t FPS_LIMIT = 120;
 
+// TODO: Add camera wrapper
+
 int main(){
     SDL_Init(SDL_INIT_EVERYTHING);
 
@@ -38,7 +38,8 @@ int main(){
         WIDTH, 
         HEIGHT, 
         SDL_WINDOW_OPENGL);
-    SDL_Event ev;
+    CMD_Input input = CMD_CreateInput();
+    CMD_Window windowWrp = CMD_CreateWindow(window);
     int8_t shouldClose = 0;
 
     SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -78,12 +79,8 @@ int main(){
     GPI_VertexArray vao = GPI_CreateVertexArray(&layout, &vbo, &ibo);
     GPI_BindVertexArrayAttribs(&vao);
     GPI_UnbindVertexArray(&vao);
-
-    float deltaTime = 0.0f;
     
     glm::vec3 eulerCamRotation = {0.f, 0.f, 0.f};
-    
-    CMD_Input input = CMD_CreateInput();
 
     const float sensitivity = 0.01f;
     const float moveSpeed = 0.01f;
@@ -109,7 +106,7 @@ int main(){
             glBufferSubData(ubo.TYPE, sizeof(glm::mat4), sizeof(glm::mat4), &view);
         GPI_UnbindBuffer(&ubo);
 
-        CMD_PollEvents(&input, &ev);
+        CMD_PollEvents(&input);
         if(input.pressed[SDLK_ESCAPE])
             shouldClose = 1;
 
@@ -143,7 +140,7 @@ int main(){
         uint32_t tickDiff = currentTime - lastTime;
         if((tickDiff) < (1000 / FPS_LIMIT))
             SDL_Delay((1000 / FPS_LIMIT) - (tickDiff));
-        deltaTime = (float)(SDL_GetTicks() - lastTime) / 1000.f;
+        windowWrp.deltaTime = (float)(SDL_GetTicks() - lastTime) / 1000.f;
     }
 
     SDL_DestroyWindow(window);

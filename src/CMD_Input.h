@@ -13,11 +13,12 @@
 
 struct CMD_Input
 {
+    SDL_Event event;
     glm::vec2 deltaMouse;
     bool pressed[512];
 };
 
 CMD_Input CMD_CreateInput();
-void CMD_PollEvents(CMD_Input* target, SDL_Event* sdlEvent);
+void CMD_PollEvents(CMD_Input* target);
 
 #endif /* _HEADER__CMD_INPUT */
