@@ -83,7 +83,7 @@ int main(){
     glm::vec3 eulerCamRotation = {0.f, 0.f, 0.f};
 
     const float sensitivity = 0.01f;
-    const float moveSpeed = 0.01f;
+    const float moveSpeed = 1.f;
 
     while(!shouldClose)
     {
@@ -107,8 +107,34 @@ int main(){
         GPI_UnbindBuffer(&ubo);
 
         CMD_PollEvents(&input);
-        if(input.pressed[SDLK_ESCAPE])
+        if(input.pressed[SDL_SCANCODE_ESCAPE])
             shouldClose = 1;
+        if(input.pressed[SDL_SCANCODE_W])
+        {
+            glm::vec3 mv = glm::vec3(camera.forward.x, 0, camera.forward.z);
+            GPI_MoveCamera(&camera, mv * moveSpeed * windowWrp.deltaTime);
+        }
+        if(input.pressed[SDL_SCANCODE_S])
+        {
+            glm::vec3 mv = glm::vec3(camera.forward.x, 0, camera.forward.z);
+            GPI_MoveCamera(&camera, -mv * moveSpeed * windowWrp.deltaTime);
+        }
+        if(input.pressed[SDL_SCANCODE_D])
+        {
+            glm::vec3 mv = glm::vec3(camera.right.x, 0, camera.right.z);
+            GPI_MoveCamera(&camera, mv * moveSpeed * windowWrp.deltaTime);
+        }
+        if(input.pressed[SDL_SCANCODE_A])
+        {
+            glm::vec3 mv = glm::vec3(camera.right.x, 0, camera.right.z);
+            GPI_MoveCamera(&camera, -mv * moveSpeed * windowWrp.deltaTime);
+        }
+        if(input.pressed[SDL_SCANCODE_SPACE]){
+            GPI_MoveCamera(&camera, glm::vec3(0,moveSpeed,0) * windowWrp.deltaTime);
+        }
+        if(input.pressed[SDL_SCANCODE_LSHIFT]){
+            GPI_MoveCamera(&camera, glm::vec3(0,-moveSpeed,0) * windowWrp.deltaTime);
+        }
 
         eulerCamRotation.x += -input.deltaMouse.y * sensitivity;
         eulerCamRotation.y += -input.deltaMouse.x * sensitivity;
