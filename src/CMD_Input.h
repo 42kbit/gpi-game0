@@ -15,7 +15,7 @@ struct CMD_Input
 {
     SDL_Event event;
     glm::vec2 deltaMouse;
-    bool pressed[512];
+    bool pressed[SDL_NUM_SCANCODES];
 };
 
 CMD_Input CMD_CreateInput();
