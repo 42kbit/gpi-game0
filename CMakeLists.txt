@@ -8,6 +8,8 @@ add_executable(${PROJECT_NAME}
 src/main.cpp
 src/CMD_Input.cpp
 src/CMD_Window.cpp
+src/CMD_BatchRenderer.cpp
+src/CMD_VertexTypes.cpp
 )
 
 add_subdirectory(external/gpi)

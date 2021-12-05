@@ -15,12 +15,8 @@
 #include "CMD_Input.h"
 #include "CMD_Window.h"
 
-struct Vertex
-{
-    glm::vec3 position;
-    glm::vec2 textureCoords;
-    float texIndex;
-};
+#include "CMD_VertexTypes.h"
+#include "CMD_BatchRenderer.h"
 
 const uint32_t WIDTH = 800, HEIGHT = 600;
 const float aspectRaito = (float)WIDTH / HEIGHT;
@@ -48,19 +44,11 @@ int main(){
     gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
     gladLoadGL();
 
-    Vertex vertecies[4];
-    vertecies[0] = {{0.f, 0.f, 0.f}, {0.f, 0.f}, 0.f};
-    vertecies[1] = {{1.f, 0.f, 0.f}, {1.f, 0.f}, 0.f};
-    vertecies[2] = {{1.f, 1.f, 0.f}, {1.f, 1.f}, 0.f};
-    vertecies[3] = {{0.f, 1.f, 0.f}, {0.f, 1.f}, 0.f};
-    uint32_t indecies[6] = {0,1,2, 2,3,0};
-
-    GPI_Buffer vbo = GPI_CreateBuffer(GL_ARRAY_BUFFER, sizeof(vertecies), vertecies, GL_STATIC_DRAW);
-    GPI_Buffer ibo = GPI_CreateBuffer(GL_ELEMENT_ARRAY_BUFFER, sizeof(indecies), indecies, GL_STATIC_DRAW);
+    glEnable(GL_DEPTH_TEST);
     GPI_Buffer ubo = GPI_CreateBuffer(GL_UNIFORM_BUFFER, sizeof(glm::mat4)*2, nullptr, GL_DYNAMIC_DRAW);
 
     GPI_Shader shaderProgram = GPI_CreateShaderFromFiles("res/shaders/defaultVertex.glsl", "res/shaders/textureDefault.glsl");
-    GPI_Texture tuxTexture = GPI_CreateTexture("res/textures/tux.png");
+    GPI_Texture tuxTexture = GPI_CreateTexture("res/textures/tux.png", GL_CLAMP_TO_BORDER, GL_NEAREST);
     GPI_Camera camera = GPI_CreateCamera(glm::radians(45.f), aspectRaito, glm::vec3(0.f, 0.f, 3.f));
 
     int32_t loc = GPI_GetUniformLocation(&shaderProgram, "u_Textures");
@@ -70,20 +58,13 @@ int main(){
     if(loc != -1)
         glUniform1iv(loc, sizeof(textureIndecies) / sizeof(textureIndecies[0]), textureIndecies);
     glBindTextureUnit(0, tuxTexture.glID);
-
-    GPI_VertexLayout layout;
-    GPI_PushLayoutData(&layout, 3, GL_FLOAT, GL_FALSE);
-    GPI_PushLayoutData(&layout, 2, GL_FLOAT, GL_FALSE);
-    GPI_PushLayoutData(&layout, 1, GL_FLOAT, GL_FALSE);
-    
-    GPI_VertexArray vao = GPI_CreateVertexArray(&layout, &vbo, &ibo);
-    GPI_BindVertexArrayAttribs(&vao);
-    GPI_UnbindVertexArray(&vao);
     
     glm::vec3 eulerCamRotation = {0.f, 0.f, 0.f};
 
     const float sensitivity = 0.01f;
     const float moveSpeed = 1.f;
+
+    CMD_BatchData data = CMD_CreateBatchData(&shaderProgram);
 
     while(!shouldClose)
     {
@@ -109,30 +90,26 @@ int main(){
         CMD_PollEvents(&input);
         if(input.pressed[SDL_SCANCODE_ESCAPE])
             shouldClose = 1;
-        if(input.pressed[SDL_SCANCODE_W])
-        {
+        if(input.pressed[SDL_SCANCODE_W]) {
             glm::vec3 mv = glm::vec3(camera.forward.x, 0, camera.forward.z);
             GPI_MoveCamera(&camera, mv * moveSpeed * windowWrp.deltaTime);
         }
-        if(input.pressed[SDL_SCANCODE_S])
-        {
+        if(input.pressed[SDL_SCANCODE_S]) {
             glm::vec3 mv = glm::vec3(camera.forward.x, 0, camera.forward.z);
             GPI_MoveCamera(&camera, -mv * moveSpeed * windowWrp.deltaTime);
         }
-        if(input.pressed[SDL_SCANCODE_D])
-        {
+        if(input.pressed[SDL_SCANCODE_D]) {
             glm::vec3 mv = glm::vec3(camera.right.x, 0, camera.right.z);
             GPI_MoveCamera(&camera, mv * moveSpeed * windowWrp.deltaTime);
         }
-        if(input.pressed[SDL_SCANCODE_A])
-        {
+        if(input.pressed[SDL_SCANCODE_A]) {
             glm::vec3 mv = glm::vec3(camera.right.x, 0, camera.right.z);
             GPI_MoveCamera(&camera, -mv * moveSpeed * windowWrp.deltaTime);
         }
-        if(input.pressed[SDL_SCANCODE_SPACE]){
+        if(input.pressed[SDL_SCANCODE_SPACE]) {
             GPI_MoveCamera(&camera, glm::vec3(0,moveSpeed,0) * windowWrp.deltaTime);
         }
-        if(input.pressed[SDL_SCANCODE_LSHIFT]){
+        if(input.pressed[SDL_SCANCODE_LSHIFT]) {
             GPI_MoveCamera(&camera, glm::vec3(0,-moveSpeed,0) * windowWrp.deltaTime);
         }
 
@@ -141,7 +118,7 @@ int main(){
 
         //rendering
         glClearColor(0,0,0,1);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         const uint8_t index = 0;
         glBindBufferRange(GL_UNIFORM_BUFFER, index, ubo.glID, 0, sizeof(glm::mat4)*2);
@@ -155,10 +132,14 @@ int main(){
         if(loc != -1)
             glUniformMatrix4fv(loc, 1, GL_FALSE, &model[0][0]);
 
-        GPI_BindShader(&shaderProgram);
+        CMD_BeginBatch(&data);
 
-        GPI_BindVertexArray(&vao);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+        CMD_PushQuadData(&data, {0,0,1});
+        CMD_PushQuadData(&data, {0,1,-1});
+        CMD_PushQuadData(&data, {1,0,0});
+        
+        CMD_EndBatch(&data);
+        CMD_Flush(&data);
 
         SDL_GL_SwapWindow(window);
 
