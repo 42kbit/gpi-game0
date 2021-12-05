@@ -18,11 +18,22 @@
 #include "CMD_VertexTypes.h"
 #include "CMD_BatchRenderer.h"
 
+#include "CMD_Global.h"
+
 const uint32_t WIDTH = 800, HEIGHT = 600;
 const float aspectRaito = (float)WIDTH / HEIGHT;
 const uint32_t FPS_LIMIT = 120;
 
 // TODO: Add camera wrapper
+
+static void GPI_SetUniformBlock(GPI_Shader* target, char* blockName, uint8_t index)
+{
+    uint32_t loc = glGetUniformBlockIndex(target->glID, blockName);
+    if(loc != GL_INVALID_INDEX)
+        glUniformBlockBinding(target->glID, loc, index);
+    else
+        exit(0);
+}
 
 int main(){
     SDL_Init(SDL_INIT_EVERYTHING);
@@ -45,6 +56,7 @@ int main(){
     gladLoadGL();
 
     glEnable(GL_DEPTH_TEST);
+
     GPI_Buffer ubo = GPI_CreateBuffer(GL_UNIFORM_BUFFER, sizeof(glm::mat4)*2, nullptr, GL_DYNAMIC_DRAW);
 
     GPI_Shader shaderProgram = GPI_CreateShaderFromFiles("res/shaders/defaultVertex.glsl", "res/shaders/textureDefault.glsl");
@@ -61,7 +73,7 @@ int main(){
     
     glm::vec3 eulerCamRotation = {0.f, 0.f, 0.f};
 
-    const float sensitivity = 0.01f;
+    const float sensitivity = 0.1f;
     const float moveSpeed = 1.f;
 
     CMD_BatchData data = CMD_CreateBatchData(&shaderProgram);
@@ -123,9 +135,7 @@ int main(){
         const uint8_t index = 0;
         glBindBufferRange(GL_UNIFORM_BUFFER, index, ubo.glID, 0, sizeof(glm::mat4)*2);
 
-        uint32_t blockLoc = glGetUniformBlockIndex(shaderProgram.glID, "ProjectonView");
-        if(blockLoc != GL_INVALID_INDEX)
-            glUniformBlockBinding(shaderProgram.glID, blockLoc, index);
+        GPI_SetUniformBlock(&shaderProgram, "ProjectionView", index);
         
         glm::mat4 model = glm::mat4(1);
         loc = GPI_GetUniformLocation(&shaderProgram, "u_Model");
