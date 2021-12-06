@@ -27,6 +27,7 @@ CMD_BatchData CMD_CreateBatchData(GPI_Shader* shader)
     data.ibo = GPI_CreateBuffer(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * CMD_MAX_INDECIES_PB, indecies, GL_STATIC_DRAW);
     data.layout = CMD_GetDefaultVertexLayout();
     data.vao = GPI_CreateVertexArray(&data.layout, &data.vbo, &data.ibo);
+    GPI_BindVertexArray(&data.vao);
     GPI_BindVertexArrayAttribs(&data.vao);
 
     GPI_BindVertexArray(&data.vao);
@@ -41,7 +42,7 @@ CMD_BatchData CMD_CreateBatchData(GPI_Shader* shader)
 
 void CMD_PushQuadData(CMD_BatchData* target, glm::vec3 position)
 {
-    if((target->vertexArrayItr - target->vertexArray) > CMD_MAX_VERTECIES_PB)
+    if((target->vertexArrayItr - target->vertexArray) >= CMD_MAX_VERTECIES_PB)
     {
         CMD_EndBatch(target);
         CMD_Flush(target);
@@ -62,7 +63,6 @@ void CMD_Flush(CMD_BatchData* target)
 {
     GPI_BindVertexArray(&target->vao);
     GPI_BindShader(target->externalShader);
-
     glDrawElements(GL_TRIANGLES, CMD_MAX_INDECIES_PB, GL_UNSIGNED_INT, NULL);
 }
 
