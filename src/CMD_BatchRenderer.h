@@ -8,12 +8,14 @@
 #include "GPI_VertexArray.h"
 
 #include "GPI_Shader.h"
+#include "GPI_Texture.h"
 /*
     _PB = per batch
 */
 const uint32_t CMD_MAX_QUADS_PB = 64;
 const uint32_t CMD_MAX_INDECIES_PB = CMD_MAX_QUADS_PB * 6;
 const uint32_t CMD_MAX_VERTECIES_PB = CMD_MAX_QUADS_PB * 4;
+const uint32_t CMD_MAX_TEXTURES_PB = 32;
 const uint8_t CMD_QUADSIZE = 1;
 
 struct CMD_BatchData
@@ -26,6 +28,8 @@ struct CMD_BatchData
     GPI_VertexLayout layout;
 
     GPI_Shader* externalShader;
+    GPI_Texture* textures[CMD_MAX_TEXTURES_PB];
+    uint32_t texturesTop = 0;
 
     CMD_VertexDefault* vertexArray = NULL;
     CMD_VertexDefault* vertexArrayItr = NULL;
@@ -33,7 +37,7 @@ struct CMD_BatchData
 
 CMD_BatchData CMD_CreateBatchData(GPI_Shader* externalShader);
 
-void CMD_PushQuadData(CMD_BatchData* target, glm::vec3 position); // add an rotation later
+void CMD_PushQuadData(CMD_BatchData* target, glm::vec3 position, GPI_Texture* texture); // add an rotation later
 
 void CMD_BeginBatch(CMD_BatchData* target);
 void CMD_Flush(CMD_BatchData* target);

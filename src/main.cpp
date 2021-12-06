@@ -60,20 +60,14 @@ int main(){
     GPI_Buffer ubo = GPI_CreateBuffer(GL_UNIFORM_BUFFER, sizeof(glm::mat4)*2, nullptr, GL_DYNAMIC_DRAW);
 
     GPI_Shader shaderProgram = GPI_CreateShaderFromFiles("res/shaders/defaultVertex.glsl", "res/shaders/textureDefault.glsl");
-    GPI_Texture tuxTexture = GPI_CreateTexture("res/textures/tux.png", GL_CLAMP_TO_BORDER, GL_NEAREST);
     GPI_Camera camera = GPI_CreateCamera(glm::radians(45.f), aspectRaito, glm::vec3(0.f, 0.f, 3.f));
 
-    int32_t loc = GPI_GetUniformLocation(&shaderProgram, "u_Textures");
-    int32_t textureIndecies[32];
-    for(uint32_t i = 0; i < 32; i++)
-        textureIndecies[i] = i;
-    if(loc != -1)
-        glUniform1iv(loc, sizeof(textureIndecies) / sizeof(textureIndecies[0]), textureIndecies);
-    glBindTextureUnit(0, tuxTexture.glID);
-    
+    GPI_Texture tuxTexture = GPI_CreateTexture("res/textures/tux.png", GL_CLAMP_TO_BORDER, GL_NEAREST);
+    GPI_Texture catTexture = GPI_CreateTexture("res/textures/communist-cat.jpg", GL_CLAMP_TO_BORDER, GL_NEAREST);    
+
     glm::vec3 eulerCamRotation = {0.f, 0.f, 0.f};
 
-    const float sensitivity = 0.1f;
+    const float sensitivity = 0.01f;
     const float moveSpeed = 1.f;
 
     CMD_BatchData data = CMD_CreateBatchData(&shaderProgram);
@@ -125,29 +119,33 @@ int main(){
             GPI_MoveCamera(&camera, glm::vec3(0,-moveSpeed,0) * windowWrp.deltaTime);
         }
 
+        if(input.pressed[SDL_SCANCODE_TAB])
+            glEnable(GL_CULL_FACE);
+        else
+            glDisable(GL_CULL_FACE);
+
         eulerCamRotation.x += -input.deltaMouse.y * sensitivity;
         eulerCamRotation.y += -input.deltaMouse.x * sensitivity;
 
         //rendering
-        glClearColor(0,0,0,1);
+        glClearColor(0.7,1,1,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         const uint8_t index = 0;
-        glBindBufferRange(GL_UNIFORM_BUFFER, index, ubo.glID, 0, sizeof(glm::mat4)*2);
+        glBindBufferRange(ubo.TYPE, index, ubo.glID, 0, sizeof(glm::mat4)*2);
 
         GPI_SetUniformBlock(&shaderProgram, "ProjectionView", index);
         
         glm::mat4 model = glm::mat4(1);
-        loc = GPI_GetUniformLocation(&shaderProgram, "u_Model");
+        int32_t loc = GPI_GetUniformLocation(&shaderProgram, "u_Model");
         if(loc != -1)
             glUniformMatrix4fv(loc, 1, GL_FALSE, &model[0][0]);
 
         CMD_BeginBatch(&data);
 
-        CMD_PushQuadData(&data, {0,0,1});
-        CMD_PushQuadData(&data, {0,1,-1});
-        CMD_PushQuadData(&data, {1,0,0});
-        
+        CMD_PushQuadData(&data, {0,0,0}, &catTexture);
+        CMD_PushQuadData(&data, {1,0,0}, &tuxTexture);
+
         CMD_EndBatch(&data);
         CMD_Flush(&data);
 
