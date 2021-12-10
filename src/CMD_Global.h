@@ -1,9 +1,8 @@
-#ifndef _HEADER__CMD_GLOBAL
-#define _HEADER__CMD_GLOBAL
+#ifndef __HEADER_CMD_GLOBAL
+#define __HEADER_CMD_GLOBAL
 
-#include <cinttypes>
-#include "glm/gtc/matrix_transform.hpp"
+#include <inttypes.h>
 
 const uint32_t CMD_PROJECTION_VIEW_UNIFORMBLOCK_INDEX = 0;
 
-#endif /* _HEADER__CMD_GLOBAL */
+#endif /* __HEADER_CMD_GLOBAL */

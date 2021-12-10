@@ -10,7 +10,7 @@
 #include "GPI_Camera.h"
 
 #include <stddef.h>
-#include <iostream>
+#include <stdio.h>
 
 #include "CMD_Input.h"
 #include "CMD_Window.h"
@@ -19,10 +19,6 @@
 #include "CMD_BatchRenderer.h"
 
 #include "CMD_Global.h"
-
-const uint32_t WIDTH = 800, HEIGHT = 600;
-const float aspectRaito = (float)WIDTH / HEIGHT;
-const uint32_t FPS_LIMIT = 120;
 
 // TODO: Add camera wrapper
 
@@ -37,6 +33,10 @@ static void GPI_SetUniformBlock(GPI_Shader* target, char* blockName, uint8_t ind
 
 int main(){
     SDL_Init(SDL_INIT_EVERYTHING);
+
+    const uint32_t WIDTH = 800, HEIGHT = 600;
+    const float aspectRaito = (float)WIDTH / HEIGHT;
+    const uint32_t FPS_LIMIT = 120;
 
     SDL_Window* window = SDL_CreateWindow(
         "SDL window",
@@ -57,15 +57,16 @@ int main(){
 
     glEnable(GL_DEPTH_TEST);
 
-    GPI_Buffer ubo = GPI_CreateBuffer(GL_UNIFORM_BUFFER, sizeof(glm::mat4)*2, nullptr, GL_DYNAMIC_DRAW);
+    GPI_Buffer ubo = GPI_CreateBuffer(GL_UNIFORM_BUFFER, sizeof(mat4)*2, NULL, GL_DYNAMIC_DRAW);
 
     GPI_Shader shaderProgram = GPI_CreateShaderFromFiles("res/shaders/defaultVertex.glsl", "res/shaders/textureDefault.glsl");
-    GPI_Camera camera = GPI_CreateCamera(glm::radians(45.f), aspectRaito, glm::vec3(0.f, 0.f, 3.f));
+    vec3 campos = {0.f, 0.f, 3.f};
+    GPI_Camera camera = GPI_CreateCamera(glm_rad(45.f), aspectRaito, campos);
 
-    GPI_Texture tuxTexture = GPI_CreateTexture("res/textures/tux.png", GL_CLAMP_TO_BORDER, GL_NEAREST);
-    GPI_Texture catTexture = GPI_CreateTexture("res/textures/communist-cat.jpg", GL_CLAMP_TO_BORDER, GL_NEAREST);    
+    GPI_Texture tuxTexture = GPI_CreateTexture("res/textures/tux.png", GL_CLAMP_TO_BORDER, GL_NEAREST, GL_TEXTURE_2D);
+    GPI_Texture catTexture = GPI_CreateTexture("res/textures/communist-cat.jpg", GL_CLAMP_TO_BORDER, GL_NEAREST, GL_TEXTURE_2D);    
 
-    glm::vec3 eulerCamRotation = {0.f, 0.f, 0.f};
+    vec3 eulerCamRotation = {0.f, 0.f, 0.f};
 
     const float sensitivity = 0.01f;
     const float moveSpeed = 1.f;
@@ -77,74 +78,89 @@ int main(){
         uint32_t lastTime = SDL_GetTicks();
 
         GPI_SetCameraRotation(&camera, aspectRaito, 
-        glm::radians(eulerCamRotation.x), 
-        glm::radians(eulerCamRotation.y), 
-        glm::radians(eulerCamRotation.z));
+        glm_rad(eulerCamRotation[0]), 
+        glm_rad(eulerCamRotation[1]), 
+        glm_rad(eulerCamRotation[2]));
         
-        GPI_MoveCamera(&camera, camera.forward * moveSpeed * 0.f);
+        vec3 camdx; glm_vec3_scale(camera.forward, moveSpeed * 0.f, camdx);
+        GPI_MoveCamera(&camera, camdx);
 
-        input.deltaMouse = {0.f, 0.f};
+        input.deltaMouse[0] = 0.f;
+        input.deltaMouse[1] = 0.f;
 
-        glm::mat4 proj = GPI_GetCameraProjection(&camera, aspectRaito);
-        glm::mat4 view = GPI_GetCameraView(&camera);
-
+        mat4 proj; GPI_GetCameraProjection(&camera, aspectRaito, proj);
+        mat4 view; GPI_GetCameraView(&camera, view);
+        
         GPI_BindBuffer(&ubo);
-            glBufferSubData(ubo.TYPE, 0, sizeof(glm::mat4), &proj);
-            glBufferSubData(ubo.TYPE, sizeof(glm::mat4), sizeof(glm::mat4), &view);
+            glBufferSubData(ubo.TYPE, 0, sizeof(mat4), &proj);
+            glBufferSubData(ubo.TYPE, sizeof(mat4), sizeof(mat4), &view);
         GPI_UnbindBuffer(&ubo);
 
         CMD_PollEvents(&input);
         if(input.pressed[SDL_SCANCODE_ESCAPE])
             shouldClose = 1;
+                if(input.pressed[SDL_SCANCODE_ESCAPE])
+            shouldClose = 1;
         if(input.pressed[SDL_SCANCODE_W]) {
-            glm::vec3 mv = glm::vec3(camera.forward.x, 0, camera.forward.z);
-            GPI_MoveCamera(&camera, mv * moveSpeed * windowWrp.deltaTime);
+            vec3 mv = {camera.forward[0], 0, camera.forward[2]};
+            glm_vec3_scale(mv, moveSpeed * windowWrp.deltaTime, mv);
+            GPI_MoveCamera(&camera, mv);
         }
         if(input.pressed[SDL_SCANCODE_S]) {
-            glm::vec3 mv = glm::vec3(camera.forward.x, 0, camera.forward.z);
-            GPI_MoveCamera(&camera, -mv * moveSpeed * windowWrp.deltaTime);
+            vec3 mv = {camera.forward[0], 0, camera.forward[2]};
+            glm_vec3_scale(mv, moveSpeed * windowWrp.deltaTime, mv);
+            glm_vec3_negate(mv);
+            GPI_MoveCamera(&camera, mv);
         }
         if(input.pressed[SDL_SCANCODE_D]) {
-            glm::vec3 mv = glm::vec3(camera.right.x, 0, camera.right.z);
-            GPI_MoveCamera(&camera, mv * moveSpeed * windowWrp.deltaTime);
+            vec3 mv = {camera.right[0], 0, camera.right[2]};
+            glm_vec3_scale(mv, moveSpeed * windowWrp.deltaTime, mv);
+            GPI_MoveCamera(&camera, mv);
         }
         if(input.pressed[SDL_SCANCODE_A]) {
-            glm::vec3 mv = glm::vec3(camera.right.x, 0, camera.right.z);
-            GPI_MoveCamera(&camera, -mv * moveSpeed * windowWrp.deltaTime);
+            vec3 mv = {camera.right[0], 0, camera.right[2]};
+            glm_vec3_scale(mv, moveSpeed * windowWrp.deltaTime, mv);
+            glm_vec3_negate(mv);
+            GPI_MoveCamera(&camera, mv);
         }
         if(input.pressed[SDL_SCANCODE_SPACE]) {
-            GPI_MoveCamera(&camera, glm::vec3(0,moveSpeed,0) * windowWrp.deltaTime);
+            vec3 mv = {0, moveSpeed * windowWrp.deltaTime, 0};
+            GPI_MoveCamera(&camera, mv);
         }
         if(input.pressed[SDL_SCANCODE_LSHIFT]) {
-            GPI_MoveCamera(&camera, glm::vec3(0,-moveSpeed,0) * windowWrp.deltaTime);
+            vec3 mv = {0, moveSpeed * windowWrp.deltaTime, 0};
+            glm_vec3_negate(mv);
+            GPI_MoveCamera(&camera, mv);
         }
-
         if(input.pressed[SDL_SCANCODE_TAB])
             glEnable(GL_CULL_FACE);
         else
             glDisable(GL_CULL_FACE);
 
-        eulerCamRotation.x += -input.deltaMouse.y * sensitivity;
-        eulerCamRotation.y += -input.deltaMouse.x * sensitivity;
+        eulerCamRotation[0] += -input.deltaMouse[1] * sensitivity;
+        eulerCamRotation[1] += -input.deltaMouse[0] * sensitivity;
 
         //rendering
         glClearColor(0.7,1,1,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         const uint8_t index = 0;
-        glBindBufferRange(ubo.TYPE, index, ubo.glID, 0, sizeof(glm::mat4)*2);
+        glBindBufferRange(ubo.TYPE, index, ubo.glID, 0, sizeof(mat4)*2);
 
         GPI_SetUniformBlock(&shaderProgram, "ProjectionView", index);
         
-        glm::mat4 model = glm::mat4(1);
+        mat4 model; glm_mat4_identity(model);
         int32_t loc = GPI_GetUniformLocation(&shaderProgram, "u_Model");
         if(loc != -1)
-            glUniformMatrix4fv(loc, 1, GL_FALSE, &model[0][0]);
+            glUniformMatrix4fv(loc, 1, GL_FALSE, model);
 
         CMD_BeginBatch(&data);
+        
+        vec3 p0 = {0,0,0};
+        vec3 p1 = {1,0,0};
 
-        CMD_PushQuadData(&data, {0,0,0}, &catTexture);
-        CMD_PushQuadData(&data, {1,0,0}, &tuxTexture);
+        CMD_PushQuadData(&data, p0, &catTexture);
+        CMD_PushQuadData(&data, p1, &tuxTexture);
 
         CMD_EndBatch(&data);
         CMD_Flush(&data);

@@ -3,11 +3,11 @@
 
 #include "SDL.h"
 
-struct CMD_Window
+typedef struct 
 {
-    SDL_Window* windowPtr = NULL;
-    float deltaTime = 0.f;
-};
+    SDL_Window* windowPtr;
+    float deltaTime;
+} CMD_Window;
 
 CMD_Window CMD_CreateWindow(SDL_Window* windowPtr);
 

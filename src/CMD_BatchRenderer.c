@@ -2,17 +2,19 @@
 
 #include "glad/glad.h"
 
-#include <cstring>
+#include <string.h>
+#include <malloc.h>
 
 CMD_BatchData CMD_CreateBatchData(GPI_Shader* shader)
 {
     CMD_BatchData data;
 
-    data.vertexArray = new CMD_VertexDefault[CMD_MAX_VERTECIES_PB];
+    data.vertexArray = (CMD_VertexDefault*)malloc(CMD_MAX_VERTECIES_PB * sizeof(*data.vertexArray));
     memset(data.vertexArray, 0, CMD_MAX_VERTECIES_PB * sizeof(CMD_VertexDefault));
+    data.textures = (GPI_Texture**)malloc(CMD_MAX_TEXTURES_PB * sizeof(*data.textures));
+    data.texturesTop = 0;
     data.vertexArrayItr = data.vertexArray;
-    uint32_t* indecies = new uint32_t[CMD_MAX_INDECIES_PB];
-
+    uint32_t* indecies = (uint32_t*)malloc(CMD_MAX_INDECIES_PB * sizeof(*indecies));
     for(uint32_t i = 0; i < CMD_MAX_INDECIES_PB/6; ++i)
     {
         indecies[i*6 + 0] = i*4 + 0;
@@ -27,6 +29,9 @@ CMD_BatchData CMD_CreateBatchData(GPI_Shader* shader)
     data.ibo = GPI_CreateBuffer(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * CMD_MAX_INDECIES_PB, indecies, GL_STATIC_DRAW);
     data.layout = CMD_GetDefaultVertexLayout();
     data.vao = GPI_CreateVertexArray(&data.layout, &data.vbo, &data.ibo);
+    
+    free(indecies);
+
     GPI_BindVertexArray(&data.vao);
     GPI_BindVertexArrayAttribs(&data.vao);
 
@@ -49,7 +54,14 @@ CMD_BatchData CMD_CreateBatchData(GPI_Shader* shader)
     return data;
 }
 
-void CMD_PushQuadData(CMD_BatchData* target, glm::vec3 position, GPI_Texture* texture)
+void CMD_FreeBatchData(CMD_BatchData* target)
+{
+    free(target->vertexArray);
+    free(target->textures);
+    GPI_FreeLayout(&target->layout);
+}
+
+void CMD_PushQuadData(CMD_BatchData* target, vec3 position, GPI_Texture* texture)
 {
     if((target->vertexArrayItr - target->vertexArray) >= CMD_MAX_VERTECIES_PB || target->texturesTop >= CMD_MAX_TEXTURES_PB-1)
     {
@@ -72,10 +84,14 @@ void CMD_PushQuadData(CMD_BatchData* target, glm::vec3 position, GPI_Texture* te
         textureIndex = target->texturesTop;
         target->textures[target->texturesTop++] = texture;
     }
-    *(target->vertexArrayItr++) = {position, {0.f, 0.f}, (float)textureIndex};
-    *(target->vertexArrayItr++) = {glm::vec3(position.x + CMD_QUADSIZE, position.y, position.z), {1.f, 0.f}, (float)textureIndex};
-    *(target->vertexArrayItr++) = {glm::vec3(position.x + CMD_QUADSIZE, position.y + CMD_QUADSIZE, position.z), {1.f, 1.f}, (float)textureIndex};
-    *(target->vertexArrayItr++) = {glm::vec3(position.x, position.y + CMD_QUADSIZE, position.z), {0.f, 1.f}, (float)textureIndex};
+    CMD_VertexDefault v0 = { {position[0], position[1], position[2]}, {0.f, 0.f}, (float)textureIndex };
+    CMD_VertexDefault v1 = { {position[0] + CMD_QUADSIZE, position[1], position[2]}, {1.f, 0.f}, (float)textureIndex };
+    CMD_VertexDefault v2 = { {position[0] + CMD_QUADSIZE, position[1] + CMD_QUADSIZE, position[2]}, {1.f, 1.f}, (float)textureIndex };
+    CMD_VertexDefault v3 = { {position[0], position[1] + CMD_QUADSIZE, position[2]}, {0.f, 1.f}, (float)textureIndex };
+    *(target->vertexArrayItr++) = v0;
+    *(target->vertexArrayItr++) = v1;
+    *(target->vertexArrayItr++) = v2;
+    *(target->vertexArrayItr++) = v3;
 }
 
 void CMD_BeginBatch(CMD_BatchData* target){

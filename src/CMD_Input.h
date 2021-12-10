@@ -9,14 +9,16 @@
 */
 
 #include "SDL.h"
-#include "glm/vec2.hpp"
+#include "vec2.h"
 
-struct CMD_Input
+#include <inttypes.h>
+
+typedef struct
 {
     SDL_Event event;
-    glm::vec2 deltaMouse;
-    bool pressed[SDL_NUM_SCANCODES];
-};
+    vec2 deltaMouse;
+    int8_t pressed[SDL_NUM_SCANCODES];
+} CMD_Input;
 
 CMD_Input CMD_CreateInput();
 void CMD_PollEvents(CMD_Input* target);

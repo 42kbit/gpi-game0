@@ -25,8 +25,8 @@ void CMD_PollEvents(CMD_Input* target)
         }
         case SDL_MOUSEMOTION:
         {
-            target->deltaMouse.x += target->event.motion.xrel;
-            target->deltaMouse.y += target->event.motion.yrel;
+            target->deltaMouse[0] += target->event.motion.xrel;
+            target->deltaMouse[1] += target->event.motion.yrel;
             break;
         }
         }

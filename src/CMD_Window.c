@@ -2,5 +2,7 @@
 
 CMD_Window CMD_CreateWindow(SDL_Window* windowPtr)
 {
-    return {windowPtr, 0.f};
+    CMD_Window win;
+    memset(&win, 0, sizeof(win));
+    return win;
 }

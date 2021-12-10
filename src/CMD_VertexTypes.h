@@ -1,16 +1,16 @@
-#ifndef _HEADER__CMD_VERTEXTYPES
-#define _HEADER__CMD_VERTEXTYPES
+#ifndef __HEADER_CMD_VERTEXTYPES
+#define __HEADER_CMD_VERTEXTYPES
 
-#include "glm/vec2.hpp"
-#include "glm/vec3.hpp"
+#include "struct/vec2.h"
+#include "struct/vec3.h"
 
 #include "GPI_VertexLayout.h"
 
-struct CMD_VertexDefault
+typedef struct 
 {
-    glm::vec3 position;
-    glm::vec2 textureCoords;
+    vec3 position;
+    vec2 textureCoords;
     float texIndex;
-};
+} CMD_VertexDefault;
 GPI_VertexLayout CMD_GetDefaultVertexLayout();
-#endif /* _HEADER__CMD_VERTEXTYPES */
+#endif /* __HEADER_CMD_VERTEXTYPES */

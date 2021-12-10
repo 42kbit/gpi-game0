@@ -1,5 +1,5 @@
-#ifndef _HEADER__CMD_BATCHRENDERER
-#define _HEADER__CMD_BATCHRENDERER
+#ifndef __HEADER_CMD_BATCHRENDERER
+#define __HEADER_CMD_BATCHRENDERER
 
 #include <inttypes.h>
 #include "CMD_VertexTypes.h"
@@ -12,13 +12,13 @@
 /*
     _PB = per batch
 */
-const uint32_t CMD_MAX_QUADS_PB = 64;
-const uint32_t CMD_MAX_INDECIES_PB = CMD_MAX_QUADS_PB * 6;
-const uint32_t CMD_MAX_VERTECIES_PB = CMD_MAX_QUADS_PB * 4;
-const uint32_t CMD_MAX_TEXTURES_PB = 32;
-const uint8_t CMD_QUADSIZE = 1;
+#define CMD_MAX_QUADS_PB 64
+#define CMD_MAX_INDECIES_PB CMD_MAX_QUADS_PB * 6
+#define CMD_MAX_VERTECIES_PB CMD_MAX_QUADS_PB * 4
+#define CMD_MAX_TEXTURES_PB 32
+#define CMD_QUADSIZE 1
 
-struct CMD_BatchData
+typedef struct
 {
     GPI_VertexArray vao;
 
@@ -28,19 +28,20 @@ struct CMD_BatchData
     GPI_VertexLayout layout;
 
     GPI_Shader* externalShader;
-    GPI_Texture* textures[CMD_MAX_TEXTURES_PB];
-    uint32_t texturesTop = 0;
+    GPI_Texture** textures;
+    uint32_t texturesTop;
 
-    CMD_VertexDefault* vertexArray = NULL;
-    CMD_VertexDefault* vertexArrayItr = NULL;
-};
+    CMD_VertexDefault* vertexArray;
+    CMD_VertexDefault* vertexArrayItr;
+} CMD_BatchData;
 
 CMD_BatchData CMD_CreateBatchData(GPI_Shader* externalShader);
+void CMD_FreeBatchData(CMD_BatchData* target);
 
-void CMD_PushQuadData(CMD_BatchData* target, glm::vec3 position, GPI_Texture* texture); // add an rotation later
+void CMD_PushQuadData(CMD_BatchData* target, vec3 position, GPI_Texture* texture); // add an rotation later
 
 void CMD_BeginBatch(CMD_BatchData* target);
 void CMD_Flush(CMD_BatchData* target);
 void CMD_EndBatch(CMD_BatchData* target);
 
-#endif /* _HEADER__CMD_BATCHRENDERER */
+#endif /* __HEADER_CMD_BATCHRENDERER */

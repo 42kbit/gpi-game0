@@ -4,12 +4,12 @@ set(PROJECT_NAME gpi-game0)
 
 project(${PROJECT_NAME})
 
-add_executable(${PROJECT_NAME} 
-src/main.cpp
-src/CMD_Input.cpp
-src/CMD_Window.cpp
-src/CMD_BatchRenderer.cpp
-src/CMD_VertexTypes.cpp
+add_executable(${PROJECT_NAME}
+src/main.c
+src/CMD_Input.c
+src/CMD_Window.c
+src/CMD_BatchRenderer.c
+src/CMD_VertexTypes.c
 )
 
 add_subdirectory(external/gpi)
