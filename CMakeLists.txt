@@ -16,7 +16,7 @@ src/GPI_VertexLayout.c
 src/GPI_Renderer.c
 src/GPI_VertexArray.c
 
-#src/GPI_Camera.c
+src/GPI_Camera.c
 )
 
 add_subdirectory(external/glad)
