@@ -1,15 +1,15 @@
 #ifndef _HEADER__GPI_SHADER
 #define _HEADER__GPI_SHADER
 
-#include <cinttypes>
+#include <inttypes.h>
 
-struct GPI_Shader
+typedef struct
 {
     uint32_t glID;
-};
+} GPI_Shader;
 
-GPI_Shader GPI_CreateShaderFromFiles(const char* vertexPath,
-                             const char* fragmentPath);
+GPI_Shader GPI_CreateShaderFromFiles(char* vertexPath,
+                            char* fragmentPath);
 
 int32_t GPI_GetUniformLocation(GPI_Shader* shader, char* uniformName);
 
