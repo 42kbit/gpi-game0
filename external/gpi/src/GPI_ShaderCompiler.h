@@ -1,10 +1,10 @@
-#ifndef H_SHADERCOMPILER
-#define H_SHADERCOMPILER
+#ifndef _HEADER__GPI_SHADERCOMPILER
+#define _HEADER__GPI_SHADERCOMPILER
 
-#include <cinttypes>
+#include <inttypes.h>
 
 uint32_t GPI_CreateShader(const char* src, uint32_t TYPE);
 
 uint32_t GPI_CreateProgram(uint32_t vertexShaderID, uint32_t fragmentShaderID);
 
-#endif // H_SHADERCOMPILER
+#endif /* _HEADER__GPI_SHADERCOMPILER */

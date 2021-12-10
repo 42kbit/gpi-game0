@@ -1,7 +1,7 @@
-#ifndef TEXTUREREADER_H_INCLUDED
-#define TEXTUREREADER_H_INCLUDED
+#ifndef _HEADER__GPI_TEXTUREREADER
+#define _HEADER__GPI_TEXTUREREADER
 
-#include <cinttypes>
+#include <inttypes.h>
 
 
 uint32_t GPI_ReadTexture(const char* path,
@@ -9,4 +9,4 @@ uint32_t GPI_ReadTexture(const char* path,
                      uint32_t FILTER_MODE,
                      uint32_t TEXTURE_TYPE);
 
-#endif // TEXTUREREADER_H_INCLUDED
+#endif /* _HEADER__GPI_TEXTUREREADER */

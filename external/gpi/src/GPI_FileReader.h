@@ -1,8 +1,6 @@
-#ifndef H_FILEREADER
-#define H_FILEREADER
+#ifndef _HEADER__GPI_FILEREADER
+#define _HEADER__GPI_FILEREADER
 
-#include <string>
+char* GPI_ReadFile(char* filePath);
 
-std::string GPI_ReadFile(const std::string& path);
-
-#endif // H_FILEREADER
+#endif /* _HEADER__GPI_FILEREADER */

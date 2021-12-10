@@ -4,13 +4,13 @@
 #include "GPI_Buffer.h"
 #include "GPI_VertexLayout.h"
 
-struct GPI_VertexArray
+typedef struct
 {
     uint32_t ID;
     GPI_VertexLayout* dataLayout;
     GPI_Buffer* VBO;
     GPI_Buffer* IBO;
-};
+} GPI_VertexArray;
 
 GPI_VertexArray GPI_CreateVertexArray(GPI_VertexLayout* layout, GPI_Buffer* VBO, GPI_Buffer* IBO);
 void GPI_BindVertexArrayAttribs(GPI_VertexArray* target);
