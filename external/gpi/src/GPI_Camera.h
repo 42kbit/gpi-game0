@@ -1,5 +1,5 @@
-#ifndef _HEADER__GPI_CAMERA
-#define _HEADER__GPI_CAMERA
+#ifndef __HEADER_GPI_CAMERA
+#define __HEADER_GPI_CAMERA
 #include "struct/vec3.h"
 #include "struct/mat4.h"
 #include "SDL.h"
@@ -24,4 +24,4 @@ void GPI_UpdateCameraDirectionalVectors(GPI_Camera* target);
 void GPI_GetCameraView(GPI_Camera* target, mat4* outView);
 void GPI_GetCameraProjection(GPI_Camera* target, float aspectRaito, mat4* outProj);
 
-#endif /* _HEADER__GPI_CAMERA */
+#endif /* __HEADER_GPI_CAMERA */

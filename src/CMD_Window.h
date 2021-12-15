@@ -1,5 +1,5 @@
-#ifndef _HEADER__CMD_WINDOW
-#define _HEADER__CMD_WINDOW
+#ifndef __HEADER_CMD_WINDOW
+#define __HEADER_CMD_WINDOW
 
 #include "SDL.h"
 
@@ -11,4 +11,4 @@ typedef struct
 
 CMD_Window CMD_CreateWindow(SDL_Window* windowPtr);
 
-#endif /* _HEADER__CMD_WINDOW */
+#endif /* __HEADER_CMD_WINDOW */

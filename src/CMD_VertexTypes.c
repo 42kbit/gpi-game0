@@ -8,3 +8,11 @@ GPI_VertexLayout CMD_GetDefaultVertexLayout()
     GPI_PushLayoutData(&result, 1, GL_FLOAT, GL_FALSE);
     return result;
 }
+
+GPI_VertexLayout CMD_GetChunkVertexLayout()
+{
+    GPI_VertexLayout result = GPI_CreateVertexLayout();
+    GPI_PushLayoutData(&result, 1, GL_UNSIGNED_INT, GL_FALSE);
+    GPI_PushLayoutData(&result, 1, GL_UNSIGNED_INT, GL_FALSE);
+    return result;
+}

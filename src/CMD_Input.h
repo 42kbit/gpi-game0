@@ -1,5 +1,5 @@
-#ifndef _HEADER__CMD_INPUT
-#define _HEADER__CMD_INPUT
+#ifndef __HEADER_CMD_INPUT
+#define __HEADER_CMD_INPUT
 
 /*
     SDL_Event wrapper
@@ -23,4 +23,4 @@ typedef struct
 CMD_Input CMD_CreateInput();
 void CMD_PollEvents(CMD_Input* target);
 
-#endif /* _HEADER__CMD_INPUT */
+#endif /* __HEADER_CMD_INPUT */

@@ -15,12 +15,12 @@ void CMD_PollEvents(CMD_Input* target)
         {
         case SDL_KEYDOWN:
         {
-            target->pressed[target->event.key.keysym.scancode] = true;
+            target->pressed[target->event.key.keysym.scancode] = 1;
             break;
         }
         case SDL_KEYUP:
         {
-            target->pressed[target->event.key.keysym.scancode] = false;
+            target->pressed[target->event.key.keysym.scancode] = 0;
             break;
         }
         case SDL_MOUSEMOTION:

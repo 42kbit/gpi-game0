@@ -68,7 +68,7 @@ int main(){
 
     vec3 eulerCamRotation = {0.f, 0.f, 0.f};
 
-    const float sensitivity = 0.01f;
+    const float sensitivity = 0.1f;
     const float moveSpeed = 1.f;
 
     CMD_BatchData data = CMD_CreateBatchData(&shaderProgram);
@@ -95,7 +95,7 @@ int main(){
             glBufferSubData(ubo.TYPE, 0, sizeof(mat4), &proj);
             glBufferSubData(ubo.TYPE, sizeof(mat4), sizeof(mat4), &view);
         GPI_UnbindBuffer(&ubo);
-
+    
         CMD_PollEvents(&input);
         if(input.pressed[SDL_SCANCODE_ESCAPE])
             shouldClose = 1;
@@ -173,7 +173,7 @@ int main(){
             SDL_Delay((1000 / FPS_LIMIT) - (tickDiff));
         windowWrp.deltaTime = (float)(SDL_GetTicks() - lastTime) / 1000.f;
     }
-
+    CMD_FreeBatchData(&data);
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
