@@ -5,8 +5,8 @@
  * Full license can be found in the LICENSE file
  */
 
-#ifndef cglm_types_h
-#define cglm_types_h
+#ifndef __HEADER_TYPES
+#define __HEADER_TYPES
 
 #if defined(_MSC_VER)
 /* do not use alignment for older visual studio versions */
@@ -89,4 +89,4 @@ typedef CGLM_ALIGN_MAT    vec4  mat4[4];
 #define CGLM_PI_2     GLM_PI_2f
 #define CGLM_PI_4     GLM_PI_4f
 
-#endif /* cglm_types_h */
+#endif /* __HEADER_TYPES */

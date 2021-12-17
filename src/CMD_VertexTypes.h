@@ -24,7 +24,7 @@ CMD_ChunckVertex CMD_MapChunkVertexData(
     uint16_t posY, 
     uint16_t posZ,
     uint8_t textureKey, // 0 - 3 key (which part of quad is this)
-    uint8_t textureIndex // index on 16*16 texture atlas
+    uint32_t textureIndex // index on 16*16 texture atlas
     );  
 GPI_VertexLayout CMD_GetChunkVertexLayout();
 #endif /* __HEADER_CMD_VERTEXTYPES */

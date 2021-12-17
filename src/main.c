@@ -31,6 +31,39 @@ static void GPI_SetUniformBlock(GPI_Shader* target, char* blockName, uint8_t ind
         exit(0);
 }
 
+const float voxelVertex[] = 
+{
+    0,0,0,0,0,
+    0,1,0,0,1,
+    1,1,0,1,1,
+    1,0,0,1,0,
+
+    1,0,0,0,0,
+    1,1,0,0,1,
+    1,1,1,1,1,
+    1,0,1,1,0,
+
+    1,0,1,0,0,
+    1,1,1,0,1,
+    0,1,1,1,1,
+    0,0,1,1,0,
+
+    0,0,1,0,0,
+    0,1,1,0,1,
+    0,1,0,1,1,
+    0,0,0,1,0,
+    //down
+    1,0,0,1,0,
+    1,0,1,1,1,
+    0,0,1,0,1,
+    0,0,0,0,0,
+    //up
+    1,1,1,1,1,
+    1,1,0,1,0,
+    0,1,0,0,0,
+    0,1,1,0,1
+};
+
 int main(){
     SDL_Init(SDL_INIT_EVERYTHING);
 
@@ -73,6 +106,40 @@ int main(){
 
     CMD_BatchData data = CMD_CreateBatchData(&shaderProgram);
 
+    GPI_Buffer vbo = GPI_CreateBuffer(GL_ARRAY_BUFFER, 24 * sizeof(CMD_VertexDefault), NULL, GL_STATIC_DRAW);
+    GPI_Buffer ibo = GPI_CreateBuffer(GL_ELEMENT_ARRAY_BUFFER, 36 * sizeof(uint32_t), NULL, GL_STATIC_DRAW);
+    uint32_t* voxelInd = (uint32_t*)malloc(36 * sizeof(*voxelInd));
+    for(uint32_t i = 0; i < 6; i++)
+    {
+        voxelInd[i*6+0] = i*4+0;
+        voxelInd[i*6+1] = i*4+1;
+        voxelInd[i*6+2] = i*4+2;
+        voxelInd[i*6+3] = i*4+2;
+        voxelInd[i*6+4] = i*4+3;
+        voxelInd[i*6+5] = i*4+0;
+    }
+    GPI_BindBuffer(&ibo);
+        glBufferSubData(ibo.TYPE, 0, 36 * sizeof(uint32_t), voxelInd);
+    GPI_UnbindBuffer(&ibo);
+    free(voxelInd);
+
+    CMD_VertexDefault* vertecies = (CMD_VertexDefault*)malloc(24 * sizeof(CMD_VertexDefault));
+    for(uint32_t i = 0; i < 24; i++)
+    {
+        memcpy(vertecies[i].position, voxelVertex+i*5 + 0, sizeof(vec3));
+        memcpy(vertecies[i].textureCoords, voxelVertex+i*5 + 3, sizeof(vec2));
+        vertecies[i].texIndex = 0.f;
+    }
+    GPI_BindBuffer(&vbo);
+        glBufferSubData(vbo.TYPE, 0, 24 * sizeof(CMD_VertexDefault), vertecies);
+    GPI_UnbindBuffer(&vbo);
+    free(vertecies);
+
+    GPI_VertexLayout layout = CMD_GetDefaultVertexLayout();
+    GPI_VertexArray vao = GPI_CreateVertexArray(&layout, &vbo, &ibo);
+    GPI_BindVertexArray(&vao);
+    GPI_BindVertexArrayAttribs(&vao);
+
     while(!shouldClose)
     {
         uint32_t lastTime = SDL_GetTicks();
@@ -85,8 +152,7 @@ int main(){
         vec3 camdx; glm_vec3_scale(camera.forward, moveSpeed * 0.f, camdx);
         GPI_MoveCamera(&camera, camdx);
 
-        input.deltaMouse[0] = 0.f;
-        input.deltaMouse[1] = 0.f;
+        memset(input.deltaMouse, 0, sizeof(vec2));
 
         mat4 proj; GPI_GetCameraProjection(&camera, aspectRaito, proj);
         mat4 view; GPI_GetCameraView(&camera, view);
@@ -98,8 +164,6 @@ int main(){
     
         CMD_PollEvents(&input);
         if(input.pressed[SDL_SCANCODE_ESCAPE])
-            shouldClose = 1;
-                if(input.pressed[SDL_SCANCODE_ESCAPE])
             shouldClose = 1;
         if(input.pressed[SDL_SCANCODE_W]) {
             vec3 mv = {camera.forward[0], 0, camera.forward[2]};
@@ -143,6 +207,14 @@ int main(){
         //rendering
         glClearColor(0.7,1,1,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        int32_t samplers[32];
+        for(uint32_t i = 0; i < 32; ++i)
+            samplers[i] = i;
+        int32_t loc = GPI_GetUniformLocation(&shaderProgram, "u_Textures");
+        if(loc != -1)
+            glUniform1iv(loc, 32, samplers);
+        glBindTextureUnit(0, catTexture.glID);
+        glBindTextureUnit(1, tuxTexture.glID);
 
         const uint8_t index = 0;
         glBindBufferRange(ubo.TYPE, index, ubo.glID, 0, sizeof(mat4)*2);
@@ -150,20 +222,21 @@ int main(){
         GPI_SetUniformBlock(&shaderProgram, "ProjectionView", index);
         
         mat4 model; glm_mat4_identity(model);
-        int32_t loc = GPI_GetUniformLocation(&shaderProgram, "u_Model");
+        loc = GPI_GetUniformLocation(&shaderProgram, "u_Model");
         if(loc != -1)
             glUniformMatrix4fv(loc, 1, GL_FALSE, model);
 
-        CMD_BeginBatch(&data);
-        
-        vec3 p0 = {0,0,0};
-        vec3 p1 = {1,0,0};
+        GPI_BindVertexArray(&vao);
+            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, NULL);
+        GPI_UnbindVertexArray(&vao);
 
-        CMD_PushQuadData(&data, p0, &catTexture);
-        CMD_PushQuadData(&data, p1, &tuxTexture);
-
-        CMD_EndBatch(&data);
-        CMD_Flush(&data);
+        //CMD_BeginBatch(&data);
+        //vec3 p0 = {0,0,0};
+        //vec3 p1 = {1,0,0};
+        //CMD_PushQuadData(&data, p0, &catTexture);
+        //CMD_PushQuadData(&data, p1, &tuxTexture);
+        //CMD_EndBatch(&data);
+        //CMD_Flush(&data);
 
         SDL_GL_SwapWindow(window);
 
@@ -173,6 +246,8 @@ int main(){
             SDL_Delay((1000 / FPS_LIMIT) - (tickDiff));
         windowWrp.deltaTime = (float)(SDL_GetTicks() - lastTime) / 1000.f;
     }
+
+    GPI_FreeLayout(&layout);
     CMD_FreeBatchData(&data);
     SDL_DestroyWindow(window);
     SDL_Quit();
