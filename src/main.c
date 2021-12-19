@@ -18,7 +18,8 @@
 #include "CMD_VertexTypes.h"
 #include "CMD_BatchRenderer.h"
 
-#include "CMD_Global.h"
+#include "CMD_Chunk.h"
+#include "CMD_ChunkRenderer.h"
 
 // TODO: Add camera wrapper
 
@@ -30,40 +31,6 @@ static void GPI_SetUniformBlock(GPI_Shader* target, char* blockName, uint8_t ind
     else
         exit(0);
 }
-
-const uint8_t voxelVertex[] = 
-{
-    //-z
-    0,0,0,0,
-    0,1,0,1,
-    1,1,0,2,
-    1,0,0,3,
-    //+x
-    1,0,0,0,
-    1,1,0,1,
-    1,1,1,2,
-    1,0,1,3,
-    //+z
-    1,0,1,0,
-    1,1,1,1,
-    0,1,1,2,
-    0,0,1,3,
-    //-x
-    0,0,1,0,
-    0,1,1,1,
-    0,1,0,2,
-    0,0,0,3,
-    //-y
-    1,0,0,3,
-    1,0,1,2,
-    0,0,1,1,
-    0,0,0,0,
-    //+y
-    1,1,1,2,
-    1,1,0,3,
-    0,1,0,0,
-    0,1,1,1
-};
 
 int main(){
     SDL_Init(SDL_INIT_EVERYTHING);
@@ -108,10 +75,13 @@ int main(){
 
     CMD_BatchData data = CMD_CreateBatchData(&shaderProgram);
 
-    GPI_Buffer vbo = GPI_CreateBuffer(GL_ARRAY_BUFFER, 24 * sizeof(CMD_VertexDefault), NULL, GL_STATIC_DRAW);
-    GPI_Buffer ibo = GPI_CreateBuffer(GL_ELEMENT_ARRAY_BUFFER, 36 * sizeof(uint32_t), NULL, GL_STATIC_DRAW);
-    uint32_t* voxelInd = (uint32_t*)malloc(36 * sizeof(*voxelInd));
-    for(uint32_t i = 0; i < 6; i++)
+    vec3 cp = {0,0,0};
+    CMD_Chunk c = CMD_CreateChunk(cp);
+
+    GPI_Buffer vbo = CMD_GenerateChunkMesh(&c);
+    GPI_Buffer ibo = GPI_CreateBuffer(GL_ELEMENT_ARRAY_BUFFER, 36*16*16*256 * sizeof(uint32_t), NULL, GL_STATIC_DRAW);
+    uint32_t* voxelInd = (uint32_t*)malloc(36*16*16*256 * sizeof(*voxelInd));
+    for(uint32_t i = 0; i < 6*16*16*256; i++)
     {
         voxelInd[i*6+0] = i*4+0;
         voxelInd[i*6+1] = i*4+1;
@@ -121,25 +91,15 @@ int main(){
         voxelInd[i*6+5] = i*4+0;
     }
     GPI_BindBuffer(&ibo);
-        glBufferSubData(ibo.TYPE, 0, 36 * sizeof(uint32_t), voxelInd);
+        glBufferSubData(ibo.TYPE, 0, 36*16*16*256 * sizeof(uint32_t), voxelInd);
     GPI_UnbindBuffer(&ibo);
     free(voxelInd);
-
-    CMD_ChunckVertex* vertecies = (CMD_ChunckVertex*)malloc(24 * sizeof(CMD_ChunckVertex));
-    for(uint32_t i = 0; i < 24; i++)
-    {
-        vertecies[i] = CMD_MapChunkVertexData(voxelVertex[i*4+0],voxelVertex[i*4+1],voxelVertex[i*4+2],
-        voxelVertex[i*4+3], 0);
-    }
-    GPI_BindBuffer(&vbo);
-        glBufferSubData(vbo.TYPE, 0, 24 * sizeof(CMD_ChunckVertex), vertecies);
-    GPI_UnbindBuffer(&vbo);
-    free(vertecies);
 
     GPI_VertexLayout layout = CMD_GetChunkVertexLayout();
     GPI_VertexArray vao = GPI_CreateVertexArray(&layout, &vbo, &ibo);
     GPI_BindVertexArray(&vao);
     GPI_BindVertexArrayAttribs(&vao);
+
     while(!shouldClose)
     {
         uint32_t lastTime = SDL_GetTicks();
@@ -227,7 +187,7 @@ int main(){
             glUniformMatrix4fv(loc, 1, GL_FALSE, model);
         
         GPI_BindVertexArray(&vao);
-            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, NULL);
+            glDrawElements(GL_TRIANGLES, 36*16*16*256, GL_UNSIGNED_INT, NULL);
         GPI_UnbindVertexArray(&vao);
         
         //CMD_BeginBatch(&data);
