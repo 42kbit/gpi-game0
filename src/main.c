@@ -31,38 +31,38 @@ static void GPI_SetUniformBlock(GPI_Shader* target, char* blockName, uint8_t ind
         exit(0);
 }
 
-const float voxelVertex[] = 
+const uint8_t voxelVertex[] = 
 {
     //-z
-    0,0,0,0,0,
-    0,1,0,0,1,
-    1,1,0,1,1,
-    1,0,0,1,0,
+    0,0,0,0,
+    0,1,0,1,
+    1,1,0,2,
+    1,0,0,3,
     //+x
-    1,0,0,0,0,
-    1,1,0,0,1,
-    1,1,1,1,1,
-    1,0,1,1,0,
+    1,0,0,0,
+    1,1,0,1,
+    1,1,1,2,
+    1,0,1,3,
     //+z
-    1,0,1,0,0,
-    1,1,1,0,1,
-    0,1,1,1,1,
-    0,0,1,1,0,
+    1,0,1,0,
+    1,1,1,1,
+    0,1,1,2,
+    0,0,1,3,
     //-x
-    0,0,1,0,0,
-    0,1,1,0,1,
-    0,1,0,1,1,
-    0,0,0,1,0,
+    0,0,1,0,
+    0,1,1,1,
+    0,1,0,2,
+    0,0,0,3,
     //-y
-    1,0,0,1,0,
-    1,0,1,1,1,
-    0,0,1,0,1,
-    0,0,0,0,0,
+    1,0,0,3,
+    1,0,1,2,
+    0,0,1,1,
+    0,0,0,0,
     //+y
-    1,1,1,1,1,
-    1,1,0,1,0,
-    0,1,0,0,0,
-    0,1,1,0,1
+    1,1,1,2,
+    1,1,0,3,
+    0,1,0,0,
+    0,1,1,1
 };
 
 int main(){
@@ -93,7 +93,8 @@ int main(){
 
     GPI_Buffer ubo = GPI_CreateBuffer(GL_UNIFORM_BUFFER, sizeof(mat4)*2, NULL, GL_DYNAMIC_DRAW);
 
-    GPI_Shader shaderProgram = GPI_CreateShaderFromFiles("res/shaders/defaultVertex.glsl", "res/shaders/textureDefault.glsl");
+    GPI_Shader shaderProgram = GPI_CreateShaderFromFiles("res/shaders/chunkVertex.glsl", 
+    "res/shaders/chunkTexture.glsl");
     vec3 campos = {0.f, 0.f, 3.f};
     GPI_Camera camera = GPI_CreateCamera(glm_rad(45.f), aspectRaito, campos);
 
@@ -124,23 +125,21 @@ int main(){
     GPI_UnbindBuffer(&ibo);
     free(voxelInd);
 
-    CMD_VertexDefault* vertecies = (CMD_VertexDefault*)malloc(24 * sizeof(CMD_VertexDefault));
+    CMD_ChunckVertex* vertecies = (CMD_ChunckVertex*)malloc(24 * sizeof(CMD_ChunckVertex));
     for(uint32_t i = 0; i < 24; i++)
     {
-        memcpy(vertecies[i].position, voxelVertex+i*5 + 0, sizeof(vec3));
-        memcpy(vertecies[i].textureCoords, voxelVertex+i*5 + 3, sizeof(vec2));
-        vertecies[i].texIndex = 0.f;
+        vertecies[i] = CMD_MapChunkVertexData(voxelVertex[i*4+0],voxelVertex[i*4+1],voxelVertex[i*4+2],
+        voxelVertex[i*4+3], 0);
     }
     GPI_BindBuffer(&vbo);
-        glBufferSubData(vbo.TYPE, 0, 24 * sizeof(CMD_VertexDefault), vertecies);
+        glBufferSubData(vbo.TYPE, 0, 24 * sizeof(CMD_ChunckVertex), vertecies);
     GPI_UnbindBuffer(&vbo);
     free(vertecies);
 
-    GPI_VertexLayout layout = CMD_GetDefaultVertexLayout();
+    GPI_VertexLayout layout = CMD_GetChunkVertexLayout();
     GPI_VertexArray vao = GPI_CreateVertexArray(&layout, &vbo, &ibo);
     GPI_BindVertexArray(&vao);
     GPI_BindVertexArrayAttribs(&vao);
-
     while(!shouldClose)
     {
         uint32_t lastTime = SDL_GetTicks();
@@ -226,11 +225,11 @@ int main(){
         loc = GPI_GetUniformLocation(&shaderProgram, "u_Model");
         if(loc != -1)
             glUniformMatrix4fv(loc, 1, GL_FALSE, model);
-
+        
         GPI_BindVertexArray(&vao);
             glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, NULL);
         GPI_UnbindVertexArray(&vao);
-
+        
         //CMD_BeginBatch(&data);
         //vec3 p0 = {0,0,0};
         //vec3 p1 = {1,0,0};
