@@ -1,5 +1,6 @@
 #include "CMD_ChunkRenderer.h"
 #include "CMD_Global.h"
+#include "GPI_VertexArray.h"
 
 #include <string.h>
 
@@ -15,7 +16,7 @@ static uint8_t CMD_IsTransparentAt(CMD_Chunk* c, vec3 pos, vec3 offset)
 {
     uint32_t arraypos = (uint32_t)(pos[0]+offset[0])*CMD_CHUNK_COUNT_Y*CMD_CHUNK_COUNT_Z + (uint32_t)(pos[1]+offset[1])*CMD_CHUNK_COUNT_Z +(uint32_t)(pos[2]+offset[2]);
     return !CMD_IsInChunk(pos, offset) || (c->blocks[arraypos]->isTransparent);
-    // return CMD_IsInChunk(pos, offset) && (c->blocks[arraypos]->isTransparent); cull chunk faces
+    // return CMD_IsInChunk(pos, offset) && (c->blocks[arraypos]->isTransparent); //cull chunk faces
 }
 
 GPI_Buffer CMD_GenerateChunkMesh(CMD_Chunk* chunk)
@@ -60,4 +61,13 @@ GPI_Buffer CMD_GenerateChunkMesh(CMD_Chunk* chunk)
     );
     free(vertecies);
     return b;
+}
+
+void CMD_RenderChunkMesh(GPI_Buffer* buffer)
+{
+    GPI_VertexLayout layout = CMD_GetChunkVertexLayout();
+    GPI_VertexArray vao = GPI_CreateVertexArray(&layout, buffer, &CMD_ChunkIBO);
+    GPI_BindVertexArray(&vao);
+    GPI_BindVertexArrayAttribs(&vao);
+    glDrawElements(GL_TRIANGLES, 36*CMD_CHUNK_COUNT_ALL*CMD_CHUNK_RENDER_AREA, GL_UNSIGNED_INT, NULL);
 }

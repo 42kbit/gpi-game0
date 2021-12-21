@@ -57,12 +57,11 @@ int main(){
     gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
     gladLoadGL();
 
+    CMD_Init();
     glEnable(GL_DEPTH_TEST);
 
     GPI_Buffer ubo = GPI_CreateBuffer(GL_UNIFORM_BUFFER, sizeof(mat4)*2, NULL, GL_DYNAMIC_DRAW);
 
-    GPI_Shader shaderProgram = GPI_CreateShaderFromFiles("res/shaders/chunkVertex.glsl", 
-    "res/shaders/chunkTexture.glsl");
     vec3 campos = {0.f, 0.f, 3.f};
     GPI_Camera camera = GPI_CreateCamera(glm_rad(45.f), aspectRaito, campos);
 
@@ -74,40 +73,16 @@ int main(){
     const float sensitivity = 0.1f;
     const float moveSpeed = 1.f;
 
-    CMD_BatchData data = CMD_CreateBatchData(&shaderProgram);
-
     vec3 cp = {0,0,0};
     CMD_Chunk c = CMD_CreateChunk(cp);
     for(uint32_t i = 0; i < CMD_CHUNK_COUNT_ALL; i++)
         c.blocks[i] = &CMD_GrassBlock;
+    c.blocks[4000] = &CMD_AirBlock;
 
     GPI_Buffer vbo = CMD_GenerateChunkMesh(&c);
-    GPI_Buffer ibo = GPI_CreateBuffer(
-        GL_ELEMENT_ARRAY_BUFFER, 
-        36*CMD_CHUNK_COUNT_ALL * sizeof(uint32_t) * CMD_CHUNK_RENDER_AREA, 
-        NULL, 
-        GL_STATIC_DRAW);
-    uint32_t* voxelInd = (uint32_t*)malloc(36*CMD_CHUNK_COUNT_ALL * sizeof(*voxelInd) * CMD_CHUNK_RENDER_AREA);
-    for(uint32_t i = 0; i < 6*CMD_CHUNK_COUNT_ALL * CMD_CHUNK_RENDER_AREA; i++)
-    {
-        voxelInd[i*6+0] = i*4+0;
-        voxelInd[i*6+1] = i*4+1;
-        voxelInd[i*6+2] = i*4+2;
-        voxelInd[i*6+3] = i*4+2;
-        voxelInd[i*6+4] = i*4+3;
-        voxelInd[i*6+5] = i*4+0;
-    }
-    GPI_BindBuffer(&ibo);
-        glBufferSubData(ibo.TYPE, 
-        0,
-        36*CMD_CHUNK_COUNT_ALL * sizeof(uint32_t) * CMD_CHUNK_RENDER_AREA, 
-        voxelInd
-        );
-    GPI_UnbindBuffer(&ibo);
-    free(voxelInd);
 
     GPI_VertexLayout layout = CMD_GetChunkVertexLayout();
-    GPI_VertexArray vao = GPI_CreateVertexArray(&layout, &vbo, &ibo);
+    GPI_VertexArray vao = GPI_CreateVertexArray(&layout, &vbo, &CMD_ChunkIBO);
     GPI_BindVertexArray(&vao);
     GPI_BindVertexArrayAttribs(&vao);
 
@@ -182,10 +157,12 @@ int main(){
         //rendering
         glClearColor(0.7,1,1,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        GPI_BindShader(&CMD_ChunkShader);
         int32_t samplers[32];
         for(uint32_t i = 0; i < 32; ++i)
             samplers[i] = i;
-        int32_t loc = GPI_GetUniformLocation(&shaderProgram, "u_Textures");
+        int32_t loc = GPI_GetUniformLocation(&CMD_ChunkShader, "u_Textures");
         if(loc != -1)
             glUniform1iv(loc, 32, samplers);
         glBindTextureUnit(0, catTexture.glID);
@@ -194,24 +171,14 @@ int main(){
         const uint8_t index = 0;
         glBindBufferRange(ubo.TYPE, index, ubo.glID, 0, sizeof(mat4)*2);
 
-        GPI_SetUniformBlock(&shaderProgram, "ProjectionView", index);
+        GPI_SetUniformBlock(&CMD_ChunkShader, "ProjectionView", index);
         
         mat4 model; glm_mat4_identity(model);
-        loc = GPI_GetUniformLocation(&shaderProgram, "u_Model");
+        loc = GPI_GetUniformLocation(&CMD_ChunkShader, "u_Model");
         if(loc != -1)
             glUniformMatrix4fv(loc, 1, GL_FALSE, model);
         
-        GPI_BindVertexArray(&vao);
-            glDrawElements(GL_TRIANGLES, 36*CMD_CHUNK_COUNT_ALL*CMD_CHUNK_RENDER_AREA, GL_UNSIGNED_INT, NULL);
-        GPI_UnbindVertexArray(&vao);
-        
-        //CMD_BeginBatch(&data);
-        //vec3 p0 = {0,0,0};
-        //vec3 p1 = {1,0,0};
-        //CMD_PushQuadData(&data, p0, &catTexture);
-        //CMD_PushQuadData(&data, p1, &tuxTexture);
-        //CMD_EndBatch(&data);
-        //CMD_Flush(&data);
+        CMD_RenderChunkMesh(&vbo);
 
         SDL_GL_SwapWindow(window);
 
@@ -223,7 +190,6 @@ int main(){
     }
 
     GPI_FreeLayout(&layout);
-    CMD_FreeBatchData(&data);
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
