@@ -52,19 +52,19 @@ int main(){
     int8_t shouldClose = 0;
 
     SDL_SetRelativeMouseMode(SDL_TRUE);
+    
 
     SDL_GLContext context = SDL_GL_CreateContext(window);
     gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
     gladLoadGL();
     printf("OpenGL Version: %s\n"
     "Graphics Card: %s\n", glGetString(GL_VERSION), glGetString(GL_RENDERER));
-
     CMD_Init();
     glEnable(GL_DEPTH_TEST);
 
     GPI_Buffer ubo = GPI_CreateBuffer(GL_UNIFORM_BUFFER, sizeof(mat4)*2, NULL, GL_DYNAMIC_DRAW);
 
-    vec3 campos = {0.f, 0.f, 3.f};
+    vec3 campos = {8.f, 128.f, 8.f};
     GPI_Camera camera = GPI_CreateCamera(glm_rad(45.f), aspectRaito, campos);
 
     GPI_Texture tuxTexture = GPI_CreateTexture("res/textures/tux.png", GL_CLAMP_TO_BORDER, GL_NEAREST, GL_TEXTURE_2D);
@@ -80,7 +80,8 @@ int main(){
     for(uint32_t i = 0; i < CMD_CHUNK_COUNT_ALL; i++)
         c.blocks[i] = rand()%2 == 0 ? &CMD_AirBlock : &CMD_GrassBlock;
 
-    GPI_Buffer vbo = CMD_GenerateChunkMesh(&c);
+    GPI_Buffer vbo = GPI_CreateBuffer(GL_ARRAY_BUFFER, CMD_CHUNK_COUNT_ALL*24*sizeof(CMD_ChunckVertex), NULL, GL_STATIC_DRAW); 
+    CMD_RegenerateChunkMesh(&vbo, &c);
 
     while(!shouldClose)
     {
@@ -146,6 +147,10 @@ int main(){
             glDisable(GL_CULL_FACE);
         else
             glEnable(GL_CULL_FACE);
+        if(input.pressed[SDL_SCANCODE_R])
+        {
+            CMD_SetChunkMeshBlock(&c, &vbo, camera.position, &CMD_GrassBlock);
+        }
 
         eulerCamRotation[0] += -input.deltaMouse[1] * sensitivity;
         eulerCamRotation[1] += -input.deltaMouse[0] * sensitivity;

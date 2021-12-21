@@ -7,6 +7,8 @@ GPI_Buffer CMD_ChunkIBO;
 GPI_Shader CMD_ChunkShader;
 GPI_VertexLayout CMD_ChunkLayout;
 
+GPI_Texture* CMD_TextureAtlases;
+
 void CMD_Init()
 {
     uint32_t* voxelInd = (uint32_t*)malloc(36*CMD_CHUNK_COUNT_ALL * sizeof(*voxelInd) * CMD_CHUNK_RENDER_AREA);
@@ -30,11 +32,13 @@ void CMD_Init()
         "res/shaders/chunkVertex.glsl", 
         "res/shaders/chunkTexture.glsl");
     CMD_ChunkLayout = CMD_GetChunkVertexLayout();
+    CMD_TextureAtlases = (GPI_Texture*)malloc(CMD_MAX_TEXTURE_ATLASES * sizeof(*CMD_TextureAtlases));
 }
 
 void CMD_Quit()
 {
     GPI_FreeLayout(&CMD_ChunkLayout);
+    free(CMD_TextureAtlases);
 }
 
 const uint8_t CMD_CHUNK_RENDER_DISTANCE = 0;

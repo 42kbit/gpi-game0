@@ -4,23 +4,44 @@
 
 #include <string.h>
 
-static uint8_t CMD_IsInChunk(vec3 pos, vec3 offset)
-{  
-    return 
-    (pos[0] + offset[0] >= 0) && (pos[0] + offset[0] < CMD_CHUNK_COUNT_X) &&
-    (pos[1] + offset[1] >= 0) && (pos[1] + offset[1] < CMD_CHUNK_COUNT_Y) &&
-    (pos[2] + offset[2] >= 0) && (pos[2] + offset[2] < CMD_CHUNK_COUNT_Z);
-}
-
 static uint8_t CMD_DrawSide(CMD_Chunk* c, vec3 pos, vec3 offset)
 {
-    if(!CMD_IsInChunk(pos, offset)) return 0;
+    if(!CMD_IsInChunkOffset(pos, offset)) return 0;
     uint32_t currentBlockpos = (uint32_t)(pos[0])*CMD_CHUNK_COUNT_Y*CMD_CHUNK_COUNT_Z + (uint32_t)(pos[1])*CMD_CHUNK_COUNT_Z +(uint32_t)(pos[2]);
     uint32_t arraypos = (uint32_t)(pos[0]+offset[0])*CMD_CHUNK_COUNT_Y*CMD_CHUNK_COUNT_Z + (uint32_t)(pos[1]+offset[1])*CMD_CHUNK_COUNT_Z +(uint32_t)(pos[2]+offset[2]);
     return !c->blocks[currentBlockpos]->isTransparent && c->blocks[arraypos]->isTransparent;
 }
 
-GPI_Buffer CMD_GenerateChunkMesh(CMD_Chunk* chunk)
+static void CMD_ChangeBufferBlock(GPI_Buffer* buffer, CMD_Chunk* c, vec3 pos)
+{
+    uint32_t index = CMD_GetParrayOffset(pos);
+    CMD_ChunckVertex data[24];
+    memset(data, 0, sizeof(data));
+    vec3 opx = {1,0,0};
+    vec3 onx = {-1,0,0};
+    vec3 opy = {0,1,0};
+    vec3 ony = {0,-1,0};
+    vec3 opz = {0,0,1};
+    vec3 onz = {0,0,-1}; 
+    vec3* direcions[6] = {opx, onx, opy, ony, opz, onz};
+    for(uint32_t i = 0; i < 6; i++){
+        if(CMD_DrawSide(c, pos, direcions[i]))
+        {
+            for(uint32_t j = 0; j < 4; j++){
+            data[j+i*4] = CMD_MapChunkVertexData(
+            CMD_VOXEL_VERTECIES[j*4+0+i*4*4] +(uint32_t)pos[0],
+            CMD_VOXEL_VERTECIES[j*4+1+i*4*4] +(uint32_t)pos[1],
+            CMD_VOXEL_VERTECIES[j*4+2+i*4*4] +(uint32_t)pos[2],
+            CMD_VOXEL_VERTECIES[j*4+3+i*4*4], 
+            0 
+            );}
+        } // TODO: recalculate neighboards
+    }
+    GPI_BindBuffer(buffer);
+    glBufferSubData(buffer->TYPE, index*sizeof(CMD_ChunckVertex)*24, sizeof(CMD_ChunckVertex)*24, data);
+}
+
+void CMD_RegenerateChunkMesh(GPI_Buffer* dst, CMD_Chunk* chunk)
 {
     CMD_ChunckVertex* vertecies = (CMD_ChunckVertex*)malloc(
         CMD_CHUNK_COUNT_ALL * 24 * sizeof(CMD_ChunckVertex)); // max size
@@ -48,20 +69,36 @@ GPI_Buffer CMD_GenerateChunkMesh(CMD_Chunk* chunk)
                 CMD_VOXEL_VERTECIES[j*4+1+i*4*4] +y,
                 CMD_VOXEL_VERTECIES[j*4+2+i*4*4] +z,
                 CMD_VOXEL_VERTECIES[j*4+3+i*4*4], 
-                0 // TODO: Change the id 
+                0 
                 );}
             }
         }
         
     }
-    GPI_Buffer b = GPI_CreateBuffer(
-        GL_ARRAY_BUFFER, 
-        CMD_CHUNK_COUNT_ALL * 24 * sizeof(CMD_ChunckVertex),
-        vertecies,
-        GL_STATIC_DRAW
-    );
+    GPI_BindBuffer(dst);
+        glBufferSubData(dst->TYPE, 0, CMD_CHUNK_COUNT_ALL * 24 * sizeof(CMD_ChunckVertex), vertecies);
     free(vertecies);
-    return b;
+}
+
+void CMD_SetChunkMeshBlock(CMD_Chunk* cdst, GPI_Buffer* bdst, vec3 pos, CMD_BlockType* bltype)
+{
+    uint32_t index = CMD_GetParrayOffset(pos);
+    if(!CMD_IsInChunk(pos)) return;
+    cdst->blocks[index] = bltype;
+    vec3 opx = {1,0,0};
+    vec3 onx = {-1,0,0};
+    vec3 opy = {0,1,0};
+    vec3 ony = {0,-1,0};
+    vec3 opz = {0,0,1};
+    vec3 onz = {0,0,-1}; 
+    vec3* direcions[6] = {opx, onx, opy, ony, opz, onz};
+    CMD_ChangeBufferBlock(bdst, cdst, pos);
+    for(uint32_t i = 0; i < 6; i++)
+    {
+        vec3 dst;
+        glm_vec3_add(pos, direcions[i], dst);
+        CMD_ChangeBufferBlock(bdst, cdst, dst);
+    }
 }
 
 void CMD_RenderChunkMesh(GPI_Buffer* buffer)

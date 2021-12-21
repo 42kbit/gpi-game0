@@ -17,5 +17,10 @@ typedef struct
 } CMD_Chunk;
 CMD_Chunk CMD_CreateChunk(vec3 pos);
 void CMD_FreeChunk(CMD_Chunk* chunk);
+uint32_t CMD_GetParrayOffset(vec3 p);
+uint8_t CMD_IsInChunk(vec3 pos);
+uint8_t CMD_IsInChunkOffset(vec3 pos, vec3 offset);
+void CMD_SetBlockChunk(CMD_Chunk* c, vec3 pos, CMD_BlockType* type);
+
 
 #endif /* __HEADER_CMD_CHUNK */
