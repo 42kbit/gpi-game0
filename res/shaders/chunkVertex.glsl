@@ -24,11 +24,11 @@ vec2 texCoords[4] = vec2[4]
 
 void main()
 {
-    float posX = float((a_Data0 & 0xF0000000) >> 28);
-    float posY = float((a_Data0 & 0x0FF00000) >> 20);
-    float posZ = float((a_Data0 & 0x000F0000) >> 16);
-    v_TexCoords =   texCoords[(a_Data0 & 0x0000C000) >> 14];
-    v_TexIndex = float((a_Data0 & 0x00003FC0) >> 6);
+    float posX = float((a_Data0 & 0xF8000000) >> 27);
+    float posY = float((a_Data0 & 0x07FC0000) >> 18);
+    float posZ = float((a_Data0 & 0x0003E000) >> 13);
+    v_TexCoords = texCoords[(a_Data0 & 0x00001800) >> 11];
+    v_TexIndex = float((a_Data0 & 0x000007FF) >> 0);
     gl_Position = u_ProjectionView.projection * u_ProjectionView.view * u_Model * vec4(posX, posY, posZ, 1.f);
     
 }

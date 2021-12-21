@@ -12,11 +12,12 @@ static uint8_t CMD_IsInChunk(vec3 pos, vec3 offset)
     (pos[2] + offset[2] >= 0) && (pos[2] + offset[2] < CMD_CHUNK_COUNT_Z);
 }
 
-static uint8_t CMD_IsTransparentAt(CMD_Chunk* c, vec3 pos, vec3 offset)
+static uint8_t CMD_DrawSide(CMD_Chunk* c, vec3 pos, vec3 offset)
 {
+    if(!CMD_IsInChunk(pos, offset)) return 0;
+    uint32_t currentBlockpos = (uint32_t)(pos[0])*CMD_CHUNK_COUNT_Y*CMD_CHUNK_COUNT_Z + (uint32_t)(pos[1])*CMD_CHUNK_COUNT_Z +(uint32_t)(pos[2]);
     uint32_t arraypos = (uint32_t)(pos[0]+offset[0])*CMD_CHUNK_COUNT_Y*CMD_CHUNK_COUNT_Z + (uint32_t)(pos[1]+offset[1])*CMD_CHUNK_COUNT_Z +(uint32_t)(pos[2]+offset[2]);
-    return !CMD_IsInChunk(pos, offset) || (c->blocks[arraypos]->isTransparent);
-    // return CMD_IsInChunk(pos, offset) && (c->blocks[arraypos]->isTransparent); //cull chunk faces
+    return !c->blocks[currentBlockpos]->isTransparent && c->blocks[arraypos]->isTransparent;
 }
 
 GPI_Buffer CMD_GenerateChunkMesh(CMD_Chunk* chunk)
@@ -39,7 +40,7 @@ GPI_Buffer CMD_GenerateChunkMesh(CMD_Chunk* chunk)
         vec3 onz = {0,0,-1}; 
         vec3* direcions[6] = {opx, onx, opy, ony, opz, onz};
         for(uint32_t i = 0; i < 6; i++){
-            if(CMD_IsTransparentAt(chunk, currentPos, direcions[i]))
+            if(CMD_DrawSide(chunk, currentPos, direcions[i]))
             {
                 for(uint32_t j = 0; j < 4; j++){
                 vertecies[offset+j+i*4] = CMD_MapChunkVertexData(
@@ -65,9 +66,9 @@ GPI_Buffer CMD_GenerateChunkMesh(CMD_Chunk* chunk)
 
 void CMD_RenderChunkMesh(GPI_Buffer* buffer)
 {
-    GPI_VertexLayout layout = CMD_GetChunkVertexLayout();
-    GPI_VertexArray vao = GPI_CreateVertexArray(&layout, buffer, &CMD_ChunkIBO);
+    GPI_VertexArray vao = GPI_CreateVertexArray(&CMD_ChunkLayout, buffer, &CMD_ChunkIBO);
     GPI_BindVertexArray(&vao);
     GPI_BindVertexArrayAttribs(&vao);
+    GPI_BindShader(&CMD_ChunkShader);
     glDrawElements(GL_TRIANGLES, 36*CMD_CHUNK_COUNT_ALL*CMD_CHUNK_RENDER_AREA, GL_UNSIGNED_INT, NULL);
 }

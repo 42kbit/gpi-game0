@@ -56,6 +56,8 @@ int main(){
     SDL_GLContext context = SDL_GL_CreateContext(window);
     gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
     gladLoadGL();
+    printf("OpenGL Version: %s\n"
+    "Graphics Card: %s\n", glGetString(GL_VERSION), glGetString(GL_RENDERER));
 
     CMD_Init();
     glEnable(GL_DEPTH_TEST);
@@ -76,15 +78,9 @@ int main(){
     vec3 cp = {0,0,0};
     CMD_Chunk c = CMD_CreateChunk(cp);
     for(uint32_t i = 0; i < CMD_CHUNK_COUNT_ALL; i++)
-        c.blocks[i] = &CMD_GrassBlock;
-    c.blocks[4000] = &CMD_AirBlock;
+        c.blocks[i] = rand()%2 == 0 ? &CMD_AirBlock : &CMD_GrassBlock;
 
     GPI_Buffer vbo = CMD_GenerateChunkMesh(&c);
-
-    GPI_VertexLayout layout = CMD_GetChunkVertexLayout();
-    GPI_VertexArray vao = GPI_CreateVertexArray(&layout, &vbo, &CMD_ChunkIBO);
-    GPI_BindVertexArray(&vao);
-    GPI_BindVertexArrayAttribs(&vao);
 
     while(!shouldClose)
     {
@@ -147,9 +143,9 @@ int main(){
             GPI_MoveCamera(&camera, mv);
         }
         if(input.pressed[SDL_SCANCODE_TAB])
-            glEnable(GL_CULL_FACE);
-        else
             glDisable(GL_CULL_FACE);
+        else
+            glEnable(GL_CULL_FACE);
 
         eulerCamRotation[0] += -input.deltaMouse[1] * sensitivity;
         eulerCamRotation[1] += -input.deltaMouse[0] * sensitivity;
@@ -189,7 +185,7 @@ int main(){
         windowWrp.deltaTime = (float)(SDL_GetTicks() - lastTime) / 1000.f;
     }
 
-    GPI_FreeLayout(&layout);
     SDL_DestroyWindow(window);
+    CMD_Quit();
     SDL_Quit();
 }

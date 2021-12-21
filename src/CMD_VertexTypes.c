@@ -19,14 +19,14 @@ GPI_VertexLayout CMD_GetChunkVertexLayout()
 
 CMD_ChunckVertex CMD_MapChunkVertexData( // chunksize = 16x16x256
     uint8_t posX, // pos is relative to chunckPos 
-    uint8_t posY, 
+    uint16_t posY, 
     uint8_t posZ,
     uint8_t textureKey, // 0 - 3 key (which part of quad is this)
     uint32_t textureIndex // index on 16*16 texture atlas
 )
 {
     uint32_t data0 = 0;
-    data0 = posX << 28 | posY << 20 | posZ << 16 | textureKey << 14 | textureIndex << 6;
+    data0 = posX << 27 | posY << 18 | posZ << 13 | textureKey << 11 | textureIndex << 0;
     CMD_ChunckVertex v = {data0, 0};
     return v;   
 }

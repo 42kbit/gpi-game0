@@ -1,9 +1,11 @@
 #include "CMD_Global.h"
 #include "CMD_Chunk.h"
+#include "CMD_VertexTypes.h"
 #include <malloc.h>
 
 GPI_Buffer CMD_ChunkIBO;
 GPI_Shader CMD_ChunkShader;
+GPI_VertexLayout CMD_ChunkLayout;
 
 void CMD_Init()
 {
@@ -27,6 +29,12 @@ void CMD_Init()
     CMD_ChunkShader = GPI_CreateShaderFromFiles(
         "res/shaders/chunkVertex.glsl", 
         "res/shaders/chunkTexture.glsl");
+    CMD_ChunkLayout = CMD_GetChunkVertexLayout();
+}
+
+void CMD_Quit()
+{
+    GPI_FreeLayout(&CMD_ChunkLayout);
 }
 
 const uint8_t CMD_CHUNK_RENDER_DISTANCE = 0;

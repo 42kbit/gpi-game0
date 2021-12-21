@@ -1,5 +1,5 @@
-#ifndef _HEADER__GPI_VERTEXARRAY
-#define _HEADER__GPI_VERTEXARRAY
+#ifndef __HEADER_GPI_VERTEXARRAY
+#define __HEADER_GPI_VERTEXARRAY
 
 #include "GPI_Buffer.h"
 #include "GPI_VertexLayout.h"
@@ -17,4 +17,4 @@ void GPI_BindVertexArrayAttribs(GPI_VertexArray* target);
 void GPI_BindVertexArray(GPI_VertexArray* target);
 void GPI_UnbindVertexArray(GPI_VertexArray* target);
 
-#endif /* _HEADER__GPI_VERTEXARRAY */
+#endif /* __HEADER_GPI_VERTEXARRAY */

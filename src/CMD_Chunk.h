@@ -4,9 +4,9 @@
 #include "CMD_VertexTypes.h"
 #include "vec3.h"
 
-#define CMD_CHUNK_COUNT_X 15
-#define CMD_CHUNK_COUNT_Y 255
-#define CMD_CHUNK_COUNT_Z 15
+#define CMD_CHUNK_COUNT_X 16
+#define CMD_CHUNK_COUNT_Y 256
+#define CMD_CHUNK_COUNT_Z 16
 
 #define CMD_CHUNK_COUNT_ALL CMD_CHUNK_COUNT_X*CMD_CHUNK_COUNT_Y*CMD_CHUNK_COUNT_Z
 
