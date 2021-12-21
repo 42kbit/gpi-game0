@@ -11,6 +11,7 @@
 
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "CMD_Input.h"
 #include "CMD_Window.h"
@@ -21,7 +22,7 @@
 #include "CMD_Chunk.h"
 #include "CMD_ChunkRenderer.h"
 
-// TODO: Add camera wrapper
+#include "CMD_Global.h"
 
 static void GPI_SetUniformBlock(GPI_Shader* target, char* blockName, uint8_t index)
 {
@@ -77,11 +78,17 @@ int main(){
 
     vec3 cp = {0,0,0};
     CMD_Chunk c = CMD_CreateChunk(cp);
+    for(uint32_t i = 0; i < CMD_CHUNK_COUNT_ALL; i++)
+        c.blocks[i] = &CMD_GrassBlock;
 
     GPI_Buffer vbo = CMD_GenerateChunkMesh(&c);
-    GPI_Buffer ibo = GPI_CreateBuffer(GL_ELEMENT_ARRAY_BUFFER, 36*16*16*256 * sizeof(uint32_t), NULL, GL_STATIC_DRAW);
-    uint32_t* voxelInd = (uint32_t*)malloc(36*16*16*256 * sizeof(*voxelInd));
-    for(uint32_t i = 0; i < 6*16*16*256; i++)
+    GPI_Buffer ibo = GPI_CreateBuffer(
+        GL_ELEMENT_ARRAY_BUFFER, 
+        36*CMD_CHUNK_COUNT_ALL * sizeof(uint32_t) * CMD_CHUNK_RENDER_AREA, 
+        NULL, 
+        GL_STATIC_DRAW);
+    uint32_t* voxelInd = (uint32_t*)malloc(36*CMD_CHUNK_COUNT_ALL * sizeof(*voxelInd) * CMD_CHUNK_RENDER_AREA);
+    for(uint32_t i = 0; i < 6*CMD_CHUNK_COUNT_ALL * CMD_CHUNK_RENDER_AREA; i++)
     {
         voxelInd[i*6+0] = i*4+0;
         voxelInd[i*6+1] = i*4+1;
@@ -91,7 +98,11 @@ int main(){
         voxelInd[i*6+5] = i*4+0;
     }
     GPI_BindBuffer(&ibo);
-        glBufferSubData(ibo.TYPE, 0, 36*16*16*256 * sizeof(uint32_t), voxelInd);
+        glBufferSubData(ibo.TYPE, 
+        0,
+        36*CMD_CHUNK_COUNT_ALL * sizeof(uint32_t) * CMD_CHUNK_RENDER_AREA, 
+        voxelInd
+        );
     GPI_UnbindBuffer(&ibo);
     free(voxelInd);
 
@@ -127,22 +138,26 @@ int main(){
             shouldClose = 1;
         if(input.pressed[SDL_SCANCODE_W]) {
             vec3 mv = {camera.forward[0], 0, camera.forward[2]};
+            glm_normalize(mv);
             glm_vec3_scale(mv, moveSpeed * windowWrp.deltaTime, mv);
             GPI_MoveCamera(&camera, mv);
         }
         if(input.pressed[SDL_SCANCODE_S]) {
             vec3 mv = {camera.forward[0], 0, camera.forward[2]};
+            glm_normalize(mv);
             glm_vec3_scale(mv, moveSpeed * windowWrp.deltaTime, mv);
             glm_vec3_negate(mv);
             GPI_MoveCamera(&camera, mv);
         }
         if(input.pressed[SDL_SCANCODE_D]) {
             vec3 mv = {camera.right[0], 0, camera.right[2]};
+            glm_normalize(mv);
             glm_vec3_scale(mv, moveSpeed * windowWrp.deltaTime, mv);
             GPI_MoveCamera(&camera, mv);
         }
         if(input.pressed[SDL_SCANCODE_A]) {
             vec3 mv = {camera.right[0], 0, camera.right[2]};
+            glm_normalize(mv);
             glm_vec3_scale(mv, moveSpeed * windowWrp.deltaTime, mv);
             glm_vec3_negate(mv);
             GPI_MoveCamera(&camera, mv);
@@ -187,7 +202,7 @@ int main(){
             glUniformMatrix4fv(loc, 1, GL_FALSE, model);
         
         GPI_BindVertexArray(&vao);
-            glDrawElements(GL_TRIANGLES, 36*16*16*256, GL_UNSIGNED_INT, NULL);
+            glDrawElements(GL_TRIANGLES, 36*CMD_CHUNK_COUNT_ALL*CMD_CHUNK_RENDER_AREA, GL_UNSIGNED_INT, NULL);
         GPI_UnbindVertexArray(&vao);
         
         //CMD_BeginBatch(&data);

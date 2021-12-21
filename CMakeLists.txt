@@ -10,9 +10,9 @@ src/CMD_Input.c
 src/CMD_Window.c
 src/CMD_BatchRenderer.c
 src/CMD_VertexTypes.c
-src/CMD_Block.c
 src/CMD_Chunk.c
 src/CMD_ChunkRenderer.c
+src/CMD_Global.c
 )
 
 add_subdirectory(external/gpi)

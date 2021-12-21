@@ -7,7 +7,7 @@
 
 typedef struct {
     uint32_t blockID;
-    uint32_t atlasOrientation; // 8 bits for x,y pos, 
+    uint8_t isTransparent;
     // flags, other stuff
 } CMD_BlockType;
 
