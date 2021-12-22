@@ -11,8 +11,8 @@ GPI_Texture* CMD_TextureAtlases;
 
 void CMD_Init()
 {
-    uint32_t* voxelInd = (uint32_t*)malloc(36*CMD_CHUNK_COUNT_ALL * sizeof(*voxelInd) * CMD_CHUNK_RENDER_AREA);
-    for(uint32_t i = 0; i < 6*CMD_CHUNK_COUNT_ALL * CMD_CHUNK_RENDER_AREA; i++)
+    uint32_t* voxelInd = (uint32_t*)malloc(36*CMD_CHUNK_COUNT_ALL * sizeof(*voxelInd));
+    for(uint32_t i = 0; i < 6*CMD_CHUNK_COUNT_ALL; i++)
     {
         voxelInd[i*6+0] = i*4+0;
         voxelInd[i*6+1] = i*4+1;
@@ -33,6 +33,7 @@ void CMD_Init()
         "res/shaders/chunkTexture.glsl");
     CMD_ChunkLayout = CMD_GetChunkVertexLayout();
     CMD_TextureAtlases = (GPI_Texture*)malloc(CMD_MAX_TEXTURE_ATLASES * sizeof(*CMD_TextureAtlases));
+    CMD_TextureAtlases[0] = GPI_CreateTexture("res/textures/atlas0.png", GL_CLAMP_TO_BORDER, GL_NEAREST, GL_TEXTURE_2D);
 }
 
 void CMD_Quit()

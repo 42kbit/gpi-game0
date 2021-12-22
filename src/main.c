@@ -52,7 +52,6 @@ int main(){
     int8_t shouldClose = 0;
 
     SDL_SetRelativeMouseMode(SDL_TRUE);
-    
 
     SDL_GLContext context = SDL_GL_CreateContext(window);
     gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
@@ -73,13 +72,21 @@ int main(){
     vec3 eulerCamRotation = {0.f, 0.f, 0.f};
 
     const float sensitivity = 0.1f;
-    const float moveSpeed = 1.f;
+    const float moveSpeed = 3.f;
 
     vec3 cp = {0,0,0};
     CMD_Chunk c = CMD_CreateChunk(cp);
     for(uint32_t i = 0; i < CMD_CHUNK_COUNT_ALL; i++)
-        c.blocks[i] = rand()%2 == 0 ? &CMD_AirBlock : &CMD_GrassBlock;
+        c.blocks[i] = &CMD_AirBlock;
 
+    for(uint32_t px = 0; px < CMD_CHUNK_COUNT_X; px++)
+    for(uint32_t py = 0; py < CMD_CHUNK_COUNT_Y/2; py++)
+    for(uint32_t pz = 0; pz < CMD_CHUNK_COUNT_Z; pz++)
+    {
+        vec3 blockPos = {px, py, pz};
+        uint32_t index = CMD_GetParrayOffset(blockPos);
+        c.blocks[index] = &CMD_GrassBlock;
+    }
     GPI_Buffer vbo = GPI_CreateBuffer(GL_ARRAY_BUFFER, CMD_CHUNK_COUNT_ALL*24*sizeof(CMD_ChunckVertex), NULL, GL_STATIC_DRAW); 
     CMD_RegenerateChunkMesh(&vbo, &c);
 
@@ -166,7 +173,7 @@ int main(){
         int32_t loc = GPI_GetUniformLocation(&CMD_ChunkShader, "u_Textures");
         if(loc != -1)
             glUniform1iv(loc, 32, samplers);
-        glBindTextureUnit(0, catTexture.glID);
+        glBindTextureUnit(0, CMD_TextureAtlases[0].glID);
         glBindTextureUnit(1, tuxTexture.glID);
 
         const uint8_t index = 0;

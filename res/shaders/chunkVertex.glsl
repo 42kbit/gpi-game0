@@ -3,7 +3,7 @@
 layout(location = 0) in uint a_Data0;
 layout(location = 1) in uint a_Data1;
 
-out float v_TexIndex;
+out flat uint v_TexIndex;
 out vec2 v_TexCoords;
 
 layout (std140) uniform ProjectionView
@@ -28,7 +28,7 @@ void main()
     float posY = float((a_Data0 & 0x07FC0000) >> 18);
     float posZ = float((a_Data0 & 0x0003E000) >> 13);
     v_TexCoords = texCoords[(a_Data0 & 0x00001800) >> 11];
-    v_TexIndex = float((a_Data0 & 0x000007FF) >> 0);
+    v_TexIndex = (a_Data0 & 0x000007F8) >> 3;
     gl_Position = u_ProjectionView.projection * u_ProjectionView.view * u_Model * vec4(posX, posY, posZ, 1.f);
     
 }

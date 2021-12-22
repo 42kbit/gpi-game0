@@ -6,7 +6,7 @@
 
 static uint8_t CMD_DrawSide(CMD_Chunk* c, vec3 pos, vec3 offset)
 {
-    if(!CMD_IsInChunkOffset(pos, offset)) return 0;
+    if(!CMD_IsInChunkOffset(pos, offset)) return c->blocks[CMD_GetParrayOffset(pos)]->isTransparent?  0 : 1;
     uint32_t currentBlockpos = (uint32_t)(pos[0])*CMD_CHUNK_COUNT_Y*CMD_CHUNK_COUNT_Z + (uint32_t)(pos[1])*CMD_CHUNK_COUNT_Z +(uint32_t)(pos[2]);
     uint32_t arraypos = (uint32_t)(pos[0]+offset[0])*CMD_CHUNK_COUNT_Y*CMD_CHUNK_COUNT_Z + (uint32_t)(pos[1]+offset[1])*CMD_CHUNK_COUNT_Z +(uint32_t)(pos[2]+offset[2]);
     return !c->blocks[currentBlockpos]->isTransparent && c->blocks[arraypos]->isTransparent;
@@ -33,7 +33,7 @@ static void CMD_ChangeBufferBlock(GPI_Buffer* buffer, CMD_Chunk* c, vec3 pos)
             CMD_VOXEL_VERTECIES[j*4+1+i*4*4] +(uint32_t)pos[1],
             CMD_VOXEL_VERTECIES[j*4+2+i*4*4] +(uint32_t)pos[2],
             CMD_VOXEL_VERTECIES[j*4+3+i*4*4], 
-            0 
+            1
             );}
         } // TODO: recalculate neighboards
     }
@@ -69,7 +69,7 @@ void CMD_RegenerateChunkMesh(GPI_Buffer* dst, CMD_Chunk* chunk)
                 CMD_VOXEL_VERTECIES[j*4+1+i*4*4] +y,
                 CMD_VOXEL_VERTECIES[j*4+2+i*4*4] +z,
                 CMD_VOXEL_VERTECIES[j*4+3+i*4*4], 
-                0 
+                2
                 );}
             }
         }
@@ -107,5 +107,5 @@ void CMD_RenderChunkMesh(GPI_Buffer* buffer)
     GPI_BindVertexArray(&vao);
     GPI_BindVertexArrayAttribs(&vao);
     GPI_BindShader(&CMD_ChunkShader);
-    glDrawElements(GL_TRIANGLES, 36*CMD_CHUNK_COUNT_ALL*CMD_CHUNK_RENDER_AREA, GL_UNSIGNED_INT, NULL);
+    glDrawElements(GL_TRIANGLES, 36*CMD_CHUNK_COUNT_ALL, GL_UNSIGNED_INT, NULL);
 }
