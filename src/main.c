@@ -23,6 +23,7 @@
 #include "CMD_ChunkRenderer.h"
 
 #include "CMD_Global.h"
+#include "CMD_Meshes.h"
 
 static void GPI_SetUniformBlock(GPI_Shader* target, char* blockName, uint8_t index)
 {
@@ -63,7 +64,7 @@ int main(){
 
     GPI_Buffer ubo = GPI_CreateBuffer(GL_UNIFORM_BUFFER, sizeof(mat4)*2, NULL, GL_DYNAMIC_DRAW);
 
-    vec3 campos = {8.f, 128.f, 8.f};
+    vec3 campos = {8.f, 128.3f, 8.f};
     GPI_Camera camera = GPI_CreateCamera(glm_rad(45.f), aspectRaito, campos);
 
     GPI_Texture tuxTexture = GPI_CreateTexture("res/textures/tux.png", GL_CLAMP_TO_BORDER, GL_NEAREST, GL_TEXTURE_2D);
@@ -87,9 +88,11 @@ int main(){
         uint32_t index = CMD_GetParrayOffset(blockPos);
         c.blocks[index] = &CMD_GrassBlock;
     }
-    GPI_Buffer vbo = GPI_CreateBuffer(GL_ARRAY_BUFFER, CMD_CHUNK_COUNT_ALL*24*sizeof(CMD_ChunckVertex), NULL, GL_STATIC_DRAW); 
-    CMD_RegenerateChunkMesh(&vbo, &c);
-
+    CMD_ChunkMesh chunkMesh = CMD_CreateMesh(
+        GL_ARRAY_BUFFER, CMD_CHUNK_COUNT_ALL*24*sizeof(CMD_ChunckVertex), GL_DYNAMIC_DRAW,
+        GL_ELEMENT_ARRAY_BUFFER, CMD_CHUNK_COUNT_ALL*36*sizeof(uint32_t), GL_DYNAMIC_DRAW, &CMD_ChunkLayout); 
+    CMD_RegenerateChunkMesh(&chunkMesh, &c);
+    
     while(!shouldClose)
     {
         uint32_t lastTime = SDL_GetTicks();
@@ -156,15 +159,13 @@ int main(){
             glEnable(GL_CULL_FACE);
         if(input.pressed[SDL_SCANCODE_R])
         {
-            CMD_SetChunkMeshBlock(&c, &vbo, camera.position, &CMD_GrassBlock);
+            CMD_SetChunkMeshBlock(&c, &chunkMesh, camera.position, &CMD_GrassBlock);
         }
 
         eulerCamRotation[0] += -input.deltaMouse[1] * sensitivity;
         eulerCamRotation[1] += -input.deltaMouse[0] * sensitivity;
 
         //rendering
-        glClearColor(0.7,1,1,1);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         GPI_BindShader(&CMD_ChunkShader);
         int32_t samplers[32];
@@ -185,8 +186,11 @@ int main(){
         loc = GPI_GetUniformLocation(&CMD_ChunkShader, "u_Model");
         if(loc != -1)
             glUniformMatrix4fv(loc, 1, GL_FALSE, model);
-        
-        CMD_RenderChunkMesh(&vbo);
+
+        glClearColor(0.7,1,1,1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        CMD_RenderChunkMesh(&chunkMesh, c.position);
 
         SDL_GL_SwapWindow(window);
 
@@ -194,7 +198,11 @@ int main(){
         uint32_t tickDiff = currentTime - lastTime;
         if((tickDiff) < (1000 / FPS_LIMIT))
             SDL_Delay((1000 / FPS_LIMIT) - (tickDiff));
-        windowWrp.deltaTime = (float)(SDL_GetTicks() - lastTime) / 1000.f;
+        windowWrp.deltaTime = (float)(SDL_GetTicks() - lastTime) / 1000.f;   
+        
+        char wintitle[256];
+        sprintf(wintitle, "FPS: %d", (uint32_t)(1.f/windowWrp.deltaTime));
+        SDL_SetWindowTitle(window, wintitle);
     }
 
     SDL_DestroyWindow(window);

@@ -22,5 +22,4 @@ uint8_t CMD_IsInChunk(vec3 pos);
 uint8_t CMD_IsInChunkOffset(vec3 pos, vec3 offset);
 void CMD_SetBlockChunk(CMD_Chunk* c, vec3 pos, CMD_BlockType* type);
 
-
 #endif /* __HEADER_CMD_CHUNK */

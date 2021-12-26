@@ -20,7 +20,6 @@ typedef struct
     uint32_t data1;
 } CMD_ChunckVertex;
 GPI_VertexLayout CMD_GetChunkVertexLayout();
-
 CMD_ChunckVertex CMD_MapChunkVertexData(
     uint8_t posX, // pos is relative to chunckPos 
     uint16_t posY, 
@@ -28,4 +27,8 @@ CMD_ChunckVertex CMD_MapChunkVertexData(
     uint8_t textureKey, // 0 - 3 key (which part of quad is this)
     uint8_t textureIndex // index on 16*16 texture atlas
 );  
+#define CMD_UNMAP_CHUNK_POSX(v) (v & 0xF8000000) >> 27
+#define CMD_UNMAP_CHUNK_POSY(v) (v & 0x07FC0000) >> 18
+#define CMD_UNMAP_CHUNK_POSZ(v) (v & 0x0003E000) >> 13
+
 #endif /* __HEADER_CMD_VERTEXTYPES */

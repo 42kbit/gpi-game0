@@ -45,6 +45,7 @@ void CMD_Quit()
 const uint8_t CMD_CHUNK_RENDER_DISTANCE = 0;
 
 const uint32_t CMD_PROJECTION_VIEW_UNIFORMBLOCK_INDEX = 0;
+const uint32_t CMD_CHUNK_RENDERER_SLICE_COUNT = 4;
 
 const CMD_BlockType CMD_AirBlock = {CMD_BLOCKID_AIR, 1};
 const CMD_BlockType CMD_GrassBlock = {CMD_BLOCKID_GRASS, 0};

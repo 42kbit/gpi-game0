@@ -1,5 +1,5 @@
-#ifndef _HEADER__GPI_BUFFER
-#define _HEADER__GPI_BUFFER
+#ifndef __HEADER_GPI_BUFFER
+#define __HEADER_GPI_BUFFER
 
 #include <inttypes.h>
 
@@ -18,4 +18,4 @@ GPI_Buffer GPI_CreateBuffer(uint32_t TYPE,
 void GPI_BindBuffer(GPI_Buffer* buffer);
 void GPI_UnbindBuffer(GPI_Buffer* buffer);
 
-#endif /* _HEADER__GPI_BUFFER */
+#endif /* __HEADER_GPI_BUFFER */

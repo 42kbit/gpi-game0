@@ -9,6 +9,7 @@
 #include "GPI_Texture.h"
 
 extern const uint8_t CMD_CHUNK_RENDER_DISTANCE;
+
 #define CMD_CHUNK_RENDER_AREA (CMD_CHUNK_RENDER_DISTANCE * 2 + 1) * (CMD_CHUNK_RENDER_DISTANCE * 2 + 1) 
 
 extern const uint32_t CMD_PROJECTION_VIEW_UNIFORMBLOCK_INDEX;

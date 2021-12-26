@@ -13,6 +13,7 @@ src/CMD_VertexTypes.c
 src/CMD_Chunk.c
 src/CMD_ChunkRenderer.c
 src/CMD_Global.c
+src/CMD_Meshes.c
 )
 
 add_subdirectory(external/gpi)
