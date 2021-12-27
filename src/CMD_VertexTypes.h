@@ -18,9 +18,9 @@ typedef struct
 {
     uint32_t data0;
     uint32_t data1;
-} CMD_ChunckVertex;
+} CMD_ChunkVertex;
 GPI_VertexLayout CMD_GetChunkVertexLayout();
-CMD_ChunckVertex CMD_MapChunkVertexData(
+CMD_ChunkVertex CMD_MapChunkVertexData(
     uint8_t posX, // pos is relative to chunckPos 
     uint16_t posY, 
     uint8_t posZ,

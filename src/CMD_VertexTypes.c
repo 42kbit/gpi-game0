@@ -17,7 +17,7 @@ GPI_VertexLayout CMD_GetChunkVertexLayout()
     return result;
 }
 
-CMD_ChunckVertex CMD_MapChunkVertexData( // chunksize = 16x16x256
+CMD_ChunkVertex CMD_MapChunkVertexData( // chunksize = 16x16x256
     uint8_t posX, // pos is relative to chunckPos 
     uint16_t posY, 
     uint8_t posZ,
@@ -27,6 +27,6 @@ CMD_ChunckVertex CMD_MapChunkVertexData( // chunksize = 16x16x256
 {
     uint32_t data0 = 0;
     data0 = posX << 27 | posY << 18 | posZ << 13 | textureKey << 11 | textureIndex << 2;
-    CMD_ChunckVertex v = {data0, 0};
+    CMD_ChunkVertex v = {data0, 0};
     return v;   
 }

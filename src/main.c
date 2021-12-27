@@ -89,7 +89,7 @@ int main(){
         c.blocks[index] = &CMD_GrassBlock;
     }
     CMD_ChunkMesh chunkMesh = CMD_CreateMesh(
-        GL_ARRAY_BUFFER, CMD_CHUNK_COUNT_ALL*24*sizeof(CMD_ChunckVertex), GL_DYNAMIC_DRAW,
+        GL_ARRAY_BUFFER, CMD_CHUNK_COUNT_ALL*24*sizeof(CMD_ChunkVertex), GL_DYNAMIC_DRAW,
         GL_ELEMENT_ARRAY_BUFFER, CMD_CHUNK_COUNT_ALL*36*sizeof(uint32_t), GL_DYNAMIC_DRAW, &CMD_ChunkLayout); 
     CMD_RegenerateChunkMesh(&chunkMesh, &c);
     
@@ -201,7 +201,7 @@ int main(){
         windowWrp.deltaTime = (float)(SDL_GetTicks() - lastTime) / 1000.f;   
         
         char wintitle[256];
-        sprintf(wintitle, "FPS: %d", (uint32_t)(1.f/windowWrp.deltaTime));
+        sprintf(wintitle, "dt: %f", windowWrp.deltaTime);
         SDL_SetWindowTitle(window, wintitle);
     }
 

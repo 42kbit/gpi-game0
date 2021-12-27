@@ -13,7 +13,7 @@ typedef struct
     GPI_Buffer ibo;
     uint32_t iboTop;
 
-    CMD_ChunckVertex* vertices;
+    CMD_ChunkVertex* vertices;
     uint32_t verticesTop;
 } CMD_ChunkMesh;
 CMD_ChunkMesh CMD_CreateMesh(

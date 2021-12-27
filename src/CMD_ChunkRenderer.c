@@ -12,18 +12,18 @@ static uint8_t CMD_DrawSide(CMD_Chunk* c, vec3 pos, vec3 offset)
     return !c->blocks[currentBlockpos]->isTransparent && c->blocks[arraypos]->isTransparent;
 }
 
-static void CMD_ReassignVertexArray(CMD_ChunckVertex* target, uint32_t count)
+static void CMD_ReassignVertexArray(CMD_ChunkVertex* target, uint32_t count)
 {
-    const CMD_ChunckVertex zerobyte; 
+    const CMD_ChunkVertex zerobyte; 
     memset(&zerobyte, 0, sizeof(zerobyte));
     for(uint32_t i = 0; i < count; i++)
     {
-        if(memcmp(target+i, &zerobyte, sizeof(CMD_ChunckVertex)) == 0)
+        if(memcmp(target+i, &zerobyte, sizeof(CMD_ChunkVertex)) == 0)
             for(uint32_t j = 0; j < count - i; j++)
-                if(memcmp(target+i+j, &zerobyte, sizeof(CMD_ChunckVertex)) != 0)
+                if(memcmp(target+i+j, &zerobyte, sizeof(CMD_ChunkVertex)) != 0)
                 {
-                    memcpy(target+i, target+i+j, sizeof(CMD_ChunckVertex));
-                    memset(target+i+j, 0, sizeof(CMD_ChunckVertex));
+                    memcpy(target+i, target+i+j, sizeof(CMD_ChunkVertex));
+                    memset(target+i+j, 0, sizeof(CMD_ChunkVertex));
                     break;
                 }
             
@@ -40,8 +40,9 @@ static vec3* direcions[6] = {opx, onx, opy, ony, opz, onz};
 
 static void CMD_UpdateBufferBlock(CMD_ChunkMesh* buffer, CMD_Chunk* c, vec3 pos)
 {
-    CMD_ChunckVertex nearSides[4];
+    CMD_ChunkVertex nearSides[4];
     uint8_t nearSidesTop = 0;
+
     memset(nearSides, 0, sizeof(nearSides));
     for(uint32_t i = 0; i < 6; i++){
         if(!CMD_DrawSide(c, pos, direcions[i]))
@@ -57,44 +58,39 @@ static void CMD_UpdateBufferBlock(CMD_ChunkMesh* buffer, CMD_Chunk* c, vec3 pos)
             }
 
             uint32_t quadCnt = (buffer->verticesTop) / 4;
-            CMD_ChunckVertex* quad = nearSides;
+            CMD_ChunkVertex* quad = nearSides;
 
             nearSidesTop = 0;
             uint8_t vertexCnted = 0; 
-            CMD_ChunckVertex* bufferVertex;
+            CMD_ChunkVertex* bufferVertex;
             for(uint32_t k = 0; k < quadCnt; k++)
             {
                 for(uint32_t q = 0; q < 4; q++){
-                    bufferVertex = buffer->vertices + k*4 + q;
-                    uint32_t qx = CMD_UNMAP_CHUNK_POSX(quad[q].data0);
-                    uint32_t qy = CMD_UNMAP_CHUNK_POSY(quad[q].data0);
-                    uint32_t qz = CMD_UNMAP_CHUNK_POSZ(quad[q].data0);
-                    if(qx == CMD_UNMAP_CHUNK_POSX(bufferVertex->data0) && 
-                       qy == CMD_UNMAP_CHUNK_POSY(bufferVertex->data0) &&
-                       qz == CMD_UNMAP_CHUNK_POSZ(bufferVertex->data0))
+                    bufferVertex = buffer->vertices + k*4;
+                    if(CMD_UNMAP_CHUNK_POSX(quad[q].data0) == CMD_UNMAP_CHUNK_POSX(bufferVertex[q].data0) && 
+                       CMD_UNMAP_CHUNK_POSY(quad[q].data0) == CMD_UNMAP_CHUNK_POSY(bufferVertex[q].data0) &&
+                       CMD_UNMAP_CHUNK_POSZ(quad[q].data0) == CMD_UNMAP_CHUNK_POSZ(bufferVertex[q].data0))
                     {
                         vertexCnted++;
                     }
-                    if(vertexCnted == 4)
+                    if(vertexCnted >= 4)
                     {
-                        memset(bufferVertex-3, 0, sizeof(CMD_ChunckVertex)*4);
+                        memset(bufferVertex, 0, sizeof(CMD_ChunkVertex)*4);
                         CMD_ReassignVertexArray(buffer->vertices, buffer->verticesTop);
-                        buffer->verticesTop -= 4;
+                        //buffer->verticesTop -= 4;
                         goto loopEND;
                     }
                 }
                 vertexCnted = 0;
             }
-            
-            loopEND:;
-            
         }
+        loopEND:;
     }
 }
 
 static void CMD_SetBufferBlock(CMD_ChunkMesh* buffer, CMD_Chunk* c, vec3 pos)
 {
-    CMD_ChunckVertex data[24];
+    CMD_ChunkVertex data[24];
     uint32_t dataTop = 0;
     memset(data, 0, sizeof(data));
     uint32_t oldTop = buffer->verticesTop;
@@ -113,7 +109,7 @@ static void CMD_SetBufferBlock(CMD_ChunkMesh* buffer, CMD_Chunk* c, vec3 pos)
             buffer->iboTop+=6;
         }
     }
-    memcpy(buffer->vertices + buffer->verticesTop, data, dataTop*sizeof(CMD_ChunckVertex));
+    memcpy(buffer->vertices + buffer->verticesTop, data, dataTop*sizeof(CMD_ChunkVertex));
     buffer->verticesTop += dataTop;
 }
 
@@ -133,6 +129,7 @@ void CMD_SetChunkMeshBlock(CMD_Chunk* cdst, CMD_ChunkMesh* bdst, vec3 pos, CMD_B
             CMD_UpdateBufferBlock(bdst, cdst, dst);
     }
     CMD_PushChunkVBOData(bdst);
+
 }
 
 void CMD_RegenerateChunkMesh(CMD_ChunkMesh* dst, CMD_Chunk* chunk)
@@ -161,8 +158,7 @@ void CMD_RegenerateChunkMesh(CMD_ChunkMesh* dst, CMD_Chunk* chunk)
         }
     }
     dst->ibo = CMD_ChunkIBO;
-    GPI_BindBuffer(&dst->vbo);
-        glBufferSubData(dst->vbo.TYPE, 0, CMD_CHUNK_COUNT_ALL * 24 * sizeof(CMD_ChunckVertex), dst->vertices);
+    CMD_PushChunkVBOData(dst);    
 }
 
 void CMD_RenderChunkMesh(CMD_ChunkMesh* mesh, vec3 pos)

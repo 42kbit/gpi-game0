@@ -12,7 +12,7 @@ CMD_ChunkMesh CMD_CreateMesh(
     m.ibo = GPI_CreateBuffer(IBOTYPE, IBOsize, NULL, IBODRAWMODE);
     m.iboTop = 0;
     m.vao = GPI_CreateVertexArray(layout, &m.vbo, &m.ibo);
-    m.vertices = (CMD_ChunckVertex*)malloc(VBOsize);
+    m.vertices = (CMD_ChunkVertex*)malloc(VBOsize);
     memset(m.vertices, 0, VBOsize);
     m.verticesTop = 0;
     return m;
@@ -26,5 +26,5 @@ void CMD_FreeChunkMesh(CMD_ChunkMesh* dst)
 
 void CMD_PushChunkVBOData(CMD_ChunkMesh* target)
 {
-    glNamedBufferSubData(target->vbo.glID, 0, (target->verticesTop+1)*sizeof(CMD_ChunckVertex), target->vertices);
+    glNamedBufferSubData(target->vbo.glID, 0, (target->verticesTop)*sizeof(CMD_ChunkVertex), target->vertices);
 }
