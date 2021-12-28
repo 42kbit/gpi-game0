@@ -22,6 +22,7 @@ extern GPI_VertexLayout CMD_ChunkLayout;
 
 extern const CMD_BlockType CMD_AirBlock;
 extern const CMD_BlockType CMD_GrassBlock;
+extern const CMD_BlockType CMD_StoneBlock;
 
 #define CMD_MAX_TEXTURE_ATLASES 32
 extern GPI_Texture* CMD_TextureAtlases;

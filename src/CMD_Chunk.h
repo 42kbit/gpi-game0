@@ -1,5 +1,6 @@
 #ifndef __HEADER_CMD_CHUNK
 #define __HEADER_CMD_CHUNK
+
 #include "CMD_BlockType.h"
 #include "CMD_VertexTypes.h"
 #include "vec3.h"

@@ -20,10 +20,11 @@
 #include "CMD_BatchRenderer.h"
 
 #include "CMD_Chunk.h"
-#include "CMD_ChunkRenderer.h"
 
 #include "CMD_Global.h"
 #include "CMD_Meshes.h"
+
+#include "CMD_ChunkRenderer.h"
 
 static void GPI_SetUniformBlock(GPI_Shader* target, char* blockName, uint8_t index)
 {
@@ -37,9 +38,9 @@ static void GPI_SetUniformBlock(GPI_Shader* target, char* blockName, uint8_t ind
 int main(){
     SDL_Init(SDL_INIT_EVERYTHING);
 
-    const uint32_t WIDTH = 800, HEIGHT = 600;
+    const uint32_t WIDTH = 1024, HEIGHT = 768;
     const float aspectRaito = (float)WIDTH / HEIGHT;
-    const uint32_t FPS_LIMIT = 120;
+    const uint32_t FPS_LIMIT = 121;
 
     SDL_Window* window = SDL_CreateWindow(
         "SDL window",
@@ -47,7 +48,7 @@ int main(){
         SDL_WINDOWPOS_CENTERED, 
         WIDTH, 
         HEIGHT, 
-        SDL_WINDOW_OPENGL);
+        SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN);
     CMD_Input input = CMD_CreateInput();
     CMD_Window windowWrp = CMD_CreateWindow(window);
     int8_t shouldClose = 0;
@@ -116,50 +117,62 @@ int main(){
         GPI_UnbindBuffer(&ubo);
     
         CMD_PollEvents(&input);
-        if(input.pressed[SDL_SCANCODE_ESCAPE])
+        if(input.held[SDL_SCANCODE_ESCAPE])
             shouldClose = 1;
-        if(input.pressed[SDL_SCANCODE_W]) {
+        if(input.held[SDL_SCANCODE_W]) {
             vec3 mv = {camera.forward[0], 0, camera.forward[2]};
             glm_normalize(mv);
             glm_vec3_scale(mv, moveSpeed * windowWrp.deltaTime, mv);
             GPI_MoveCamera(&camera, mv);
         }
-        if(input.pressed[SDL_SCANCODE_S]) {
+        if(input.held[SDL_SCANCODE_S]) {
             vec3 mv = {camera.forward[0], 0, camera.forward[2]};
             glm_normalize(mv);
             glm_vec3_scale(mv, moveSpeed * windowWrp.deltaTime, mv);
             glm_vec3_negate(mv);
             GPI_MoveCamera(&camera, mv);
         }
-        if(input.pressed[SDL_SCANCODE_D]) {
+        if(input.held[SDL_SCANCODE_D]) {
             vec3 mv = {camera.right[0], 0, camera.right[2]};
             glm_normalize(mv);
             glm_vec3_scale(mv, moveSpeed * windowWrp.deltaTime, mv);
             GPI_MoveCamera(&camera, mv);
         }
-        if(input.pressed[SDL_SCANCODE_A]) {
+        if(input.held[SDL_SCANCODE_A]) {
             vec3 mv = {camera.right[0], 0, camera.right[2]};
             glm_normalize(mv);
             glm_vec3_scale(mv, moveSpeed * windowWrp.deltaTime, mv);
             glm_vec3_negate(mv);
             GPI_MoveCamera(&camera, mv);
         }
-        if(input.pressed[SDL_SCANCODE_SPACE]) {
+        if(input.held[SDL_SCANCODE_SPACE]) {
             vec3 mv = {0, moveSpeed * windowWrp.deltaTime, 0};
             GPI_MoveCamera(&camera, mv);
         }
-        if(input.pressed[SDL_SCANCODE_LSHIFT]) {
+        if(input.held[SDL_SCANCODE_LSHIFT]) {
             vec3 mv = {0, moveSpeed * windowWrp.deltaTime, 0};
             glm_vec3_negate(mv);
             GPI_MoveCamera(&camera, mv);
         }
-        if(input.pressed[SDL_SCANCODE_TAB])
+        if(input.held[SDL_SCANCODE_TAB])
             glDisable(GL_CULL_FACE);
         else
             glEnable(GL_CULL_FACE);
-        if(input.pressed[SDL_SCANCODE_R])
+        if(CMD_GetPressed(&input, SDL_SCANCODE_KP_0))
         {
-            CMD_SetChunkMeshBlock(&c, &chunkMesh, camera.position, &CMD_GrassBlock);
+            // TODO: MAKE A SETBLOCK FUNC
+            c.blocks[CMD_GetParrayOffset(camera.position)] = &CMD_AirBlock;
+            CMD_RegenerateChunkMesh(&chunkMesh, &c);
+        }
+        if(CMD_GetPressed(&input, SDL_SCANCODE_KP_1))
+        {
+            c.blocks[CMD_GetParrayOffset(camera.position)] = &CMD_StoneBlock;
+            CMD_RegenerateChunkMesh(&chunkMesh, &c);
+        }
+        if(CMD_GetPressed(&input, SDL_SCANCODE_KP_2))
+        {
+            c.blocks[CMD_GetParrayOffset(camera.position)] = &CMD_GrassBlock;
+            CMD_RegenerateChunkMesh(&chunkMesh, &c);
         }
 
         eulerCamRotation[0] += -input.deltaMouse[1] * sensitivity;
@@ -201,7 +214,7 @@ int main(){
         windowWrp.deltaTime = (float)(SDL_GetTicks() - lastTime) / 1000.f;   
         
         char wintitle[256];
-        sprintf(wintitle, "dt: %f", windowWrp.deltaTime);
+        sprintf(wintitle, "FPS: %f", 1.f / windowWrp.deltaTime);
         SDL_SetWindowTitle(window, wintitle);
     }
 

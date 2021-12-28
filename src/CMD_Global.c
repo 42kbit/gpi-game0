@@ -2,6 +2,7 @@
 #include "CMD_Chunk.h"
 #include "CMD_VertexTypes.h"
 #include <malloc.h>
+#include "CMD_ChunkRenderer.h"
 
 GPI_Buffer CMD_ChunkIBO;
 GPI_Shader CMD_ChunkShader;
@@ -47,8 +48,9 @@ const uint8_t CMD_CHUNK_RENDER_DISTANCE = 0;
 const uint32_t CMD_PROJECTION_VIEW_UNIFORMBLOCK_INDEX = 0;
 const uint32_t CMD_CHUNK_RENDERER_SLICE_COUNT = 4;
 
-const CMD_BlockType CMD_AirBlock = {CMD_BLOCKID_AIR, 1};
-const CMD_BlockType CMD_GrassBlock = {CMD_BLOCKID_GRASS, 0};
+const CMD_BlockType CMD_AirBlock =   {0, CMD_BLOCK_TRANSPARENCY_MASK};
+const CMD_BlockType CMD_StoneBlock = {1, 0};
+const CMD_BlockType CMD_GrassBlock = {2, 0};
 const uint8_t CMD_VOXEL_VERTECIES[] = 
 { 
     //+x
