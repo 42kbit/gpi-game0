@@ -7,4 +7,5 @@
 
 void CMD_RegenerateChunkMesh(CMD_ChunkMesh* dst, CMD_Chunk* chunk);
 void CMD_RenderChunkMesh(CMD_ChunkMesh* buffer, vec3 pos);
+void CMD_SetBlockRegenerate(CMD_ChunkMesh* mesh, CMD_Chunk* chunk, vec3 pos, CMD_BlockType* block);
 #endif /* __HEADER_CMD_CHUNKRENDERER */

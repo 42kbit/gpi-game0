@@ -69,6 +69,17 @@ void CMD_RegenerateChunkMesh(CMD_ChunkMesh* dst, CMD_Chunk* chunk)
     CMD_PushChunkVBOData(dst);    
 }
 
+void CMD_SetBlockRegenerate(CMD_ChunkMesh* mesh, CMD_Chunk* chunk, vec3 pos, CMD_BlockType* block)
+{
+    if(!CMD_IsInChunk(pos))
+        return;
+    uint32_t index = CMD_GetParrayOffset(pos);
+    if(chunk->blocks[index] == block)
+        return;
+    chunk->blocks[index] = block;
+    CMD_RegenerateChunkMesh(mesh, chunk);
+}
+
 void CMD_RenderChunkMesh(CMD_ChunkMesh* mesh, vec3 pos)
 {
     GPI_BindVertexArray(&mesh->vao);

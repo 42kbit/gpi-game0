@@ -38,7 +38,7 @@ static void GPI_SetUniformBlock(GPI_Shader* target, char* blockName, uint8_t ind
 int main(){
     SDL_Init(SDL_INIT_EVERYTHING);
 
-    const uint32_t WIDTH = 1024, HEIGHT = 768;
+    const uint32_t WIDTH = 800, HEIGHT = 600;
     const float aspectRaito = (float)WIDTH / HEIGHT;
     const uint32_t FPS_LIMIT = 121;
 
@@ -48,7 +48,7 @@ int main(){
         SDL_WINDOWPOS_CENTERED, 
         WIDTH, 
         HEIGHT, 
-        SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN);
+        SDL_WINDOW_OPENGL);
     CMD_Input input = CMD_CreateInput();
     CMD_Window windowWrp = CMD_CreateWindow(window);
     int8_t shouldClose = 0;
@@ -65,7 +65,7 @@ int main(){
 
     GPI_Buffer ubo = GPI_CreateBuffer(GL_UNIFORM_BUFFER, sizeof(mat4)*2, NULL, GL_DYNAMIC_DRAW);
 
-    vec3 campos = {8.f, 128.3f, 8.f};
+    vec3 campos = {8.f, 130.0f, 8.f};
     GPI_Camera camera = GPI_CreateCamera(glm_rad(45.f), aspectRaito, campos);
 
     GPI_Texture tuxTexture = GPI_CreateTexture("res/textures/tux.png", GL_CLAMP_TO_BORDER, GL_NEAREST, GL_TEXTURE_2D);
@@ -82,7 +82,15 @@ int main(){
         c.blocks[i] = &CMD_AirBlock;
 
     for(uint32_t px = 0; px < CMD_CHUNK_COUNT_X; px++)
-    for(uint32_t py = 0; py < CMD_CHUNK_COUNT_Y/2; py++)
+    for(uint32_t py = 0; py < CMD_CHUNK_COUNT_Y/2-2; py++)
+    for(uint32_t pz = 0; pz < CMD_CHUNK_COUNT_Z; pz++)
+    {
+        vec3 blockPos = {px, py, pz};
+        uint32_t index = CMD_GetParrayOffset(blockPos);
+        c.blocks[index] = &CMD_StoneBlock;
+    }
+    for(uint32_t px = 0; px < CMD_CHUNK_COUNT_X; px++)
+    for(uint32_t py = CMD_CHUNK_COUNT_Y/2-2; py < CMD_CHUNK_COUNT_Y/2; py++)
     for(uint32_t pz = 0; pz < CMD_CHUNK_COUNT_Z; pz++)
     {
         vec3 blockPos = {px, py, pz};
@@ -158,21 +166,17 @@ int main(){
             glDisable(GL_CULL_FACE);
         else
             glEnable(GL_CULL_FACE);
-        if(CMD_GetPressed(&input, SDL_SCANCODE_KP_0))
+        if(input.held[SDL_SCANCODE_KP_0])
         {
-            // TODO: MAKE A SETBLOCK FUNC
-            c.blocks[CMD_GetParrayOffset(camera.position)] = &CMD_AirBlock;
-            CMD_RegenerateChunkMesh(&chunkMesh, &c);
+            CMD_SetBlockRegenerate(&chunkMesh, &c, camera.position, &CMD_AirBlock);
         }
-        if(CMD_GetPressed(&input, SDL_SCANCODE_KP_1))
+        if(input.held[SDL_SCANCODE_KP_1])
         {
-            c.blocks[CMD_GetParrayOffset(camera.position)] = &CMD_StoneBlock;
-            CMD_RegenerateChunkMesh(&chunkMesh, &c);
+            CMD_SetBlockRegenerate(&chunkMesh, &c, camera.position, &CMD_GrassBlock);
         }
-        if(CMD_GetPressed(&input, SDL_SCANCODE_KP_2))
+        if(input.held[SDL_SCANCODE_KP_2])
         {
-            c.blocks[CMD_GetParrayOffset(camera.position)] = &CMD_GrassBlock;
-            CMD_RegenerateChunkMesh(&chunkMesh, &c);
+            CMD_SetBlockRegenerate(&chunkMesh, &c, camera.position, &CMD_StoneBlock);
         }
 
         eulerCamRotation[0] += -input.deltaMouse[1] * sensitivity;
@@ -202,7 +206,7 @@ int main(){
 
         glClearColor(0.7,1,1,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        
         CMD_RenderChunkMesh(&chunkMesh, c.position);
 
         SDL_GL_SwapWindow(window);
@@ -214,7 +218,7 @@ int main(){
         windowWrp.deltaTime = (float)(SDL_GetTicks() - lastTime) / 1000.f;   
         
         char wintitle[256];
-        sprintf(wintitle, "FPS: %f", 1.f / windowWrp.deltaTime);
+        sprintf(wintitle, "dt: %f", windowWrp.deltaTime);
         SDL_SetWindowTitle(window, wintitle);
     }
 
