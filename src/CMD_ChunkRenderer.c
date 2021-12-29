@@ -164,7 +164,8 @@ void CMD_SetBlockUpdatable(CMD_ChunkMesh* mesh, CMD_Chunk* chunk, vec3 pos, CMD_
     {
         vec3 dst;
         glm_vec3_add(pos, direcions[i], dst);
-        CMD_RecalculateMesh(mesh, chunk, dst);
+        if(CMD_IsInChunk(dst))
+            CMD_RecalculateMesh(mesh, chunk, dst);
     }
     CMD_PushChunkVBOData(mesh);
 }
