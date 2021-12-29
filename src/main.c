@@ -168,15 +168,15 @@ int main(){
             glEnable(GL_CULL_FACE);
         if(input.held[SDL_SCANCODE_KP_0])
         {
-            CMD_SetBlockRegenerate(&chunkMesh, &c, camera.position, &CMD_AirBlock);
+            CMD_SetBlockUpdatable(&chunkMesh, &c, camera.position, &CMD_AirBlock);
         }
         if(input.held[SDL_SCANCODE_KP_1])
         {
-            CMD_SetBlockRegenerate(&chunkMesh, &c, camera.position, &CMD_GrassBlock);
+            CMD_SetBlockUpdatable(&chunkMesh, &c, camera.position, &CMD_GrassBlock);
         }
         if(input.held[SDL_SCANCODE_KP_2])
         {
-            CMD_SetBlockRegenerate(&chunkMesh, &c, camera.position, &CMD_StoneBlock);
+            CMD_SetBlockUpdatable(&chunkMesh, &c, camera.position, &CMD_StoneBlock);
         }
 
         eulerCamRotation[0] += -input.deltaMouse[1] * sensitivity;
