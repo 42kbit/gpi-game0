@@ -8,6 +8,8 @@
 #include "GPI_VertexLayout.h"
 #include "GPI_Texture.h"
 
+#include "CMD_ChunkRenderer.h"
+
 extern const uint8_t CMD_CHUNK_RENDER_DISTANCE;
 
 #define CMD_CHUNK_RENDER_AREA (CMD_CHUNK_RENDER_DISTANCE * 2 + 1) * (CMD_CHUNK_RENDER_DISTANCE * 2 + 1) 
@@ -19,6 +21,8 @@ extern const uint8_t CMD_VOXEL_VERTECIES[];
 extern GPI_Buffer CMD_ChunkIBO;
 extern GPI_Shader CMD_ChunkShader;
 extern GPI_VertexLayout CMD_ChunkLayout;
+
+extern CMD_BLOCKSETFUNC CMD_BLOCKPLACEMENT_FUNC;
 
 extern const CMD_BlockType CMD_AirBlock;
 extern const CMD_BlockType CMD_GrassBlock;

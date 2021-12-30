@@ -2,13 +2,14 @@
 #include "CMD_Chunk.h"
 #include "CMD_VertexTypes.h"
 #include <malloc.h>
-#include "CMD_ChunkRenderer.h"
 
 GPI_Buffer CMD_ChunkIBO;
 GPI_Shader CMD_ChunkShader;
 GPI_VertexLayout CMD_ChunkLayout;
 
 GPI_Texture* CMD_TextureAtlases;
+
+void (*CMD_BLOCKPLACEMENT_FUNC)(CMD_ChunkMesh*, CMD_Chunk*, vec3, CMD_BlockType*);
 
 void CMD_Init()
 {
@@ -35,6 +36,8 @@ void CMD_Init()
     CMD_ChunkLayout = CMD_GetChunkVertexLayout();
     CMD_TextureAtlases = (GPI_Texture*)malloc(CMD_MAX_TEXTURE_ATLASES * sizeof(*CMD_TextureAtlases));
     CMD_TextureAtlases[0] = GPI_CreateTexture("res/textures/atlas0.png", GL_CLAMP_TO_BORDER, GL_NEAREST, GL_TEXTURE_2D);
+
+    CMD_BLOCKPLACEMENT_FUNC = CMD_SetBlockUpdatable;
 }
 
 void CMD_Quit()

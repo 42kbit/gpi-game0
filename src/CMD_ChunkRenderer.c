@@ -2,8 +2,9 @@
 #include "CMD_Global.h"
 #include "GPI_VertexArray.h"
 
-
 #include <string.h>
+
+#include "project.h"
 
 static vec3 opx = {1,0,0};
 static vec3 onx = {-1,0,0};
@@ -109,6 +110,43 @@ static void CMD_RecalculateMesh(CMD_ChunkMesh* mesh, CMD_Chunk* chunk, vec3 pos)
         }
     }
 };
+
+static void CMD_ScreenToOpenGL(vec2 screenPos, GPI_Camera* camera, mat4 model, vec3 dst)
+{
+    int32_t glvp[4];
+    glGetIntegerv(GL_VIEWPORT, glvp);
+    float aspectRaito = (float)glvp[2] / (float)glvp[3]; 
+    vec4 viewPort = {glvp[0], glvp[1], glvp[2], glvp[3]};
+    mat4 proj; GPI_GetCameraProjection(camera, aspectRaito, proj);
+    mat4 view; GPI_GetCameraView(camera, view);
+    mat4 pv; glm_mat4_mul(proj, view, pv);
+    mat4 m; glm_mat4_identity(m);  
+    if(model != NULL) 
+        memcpy(m, model, sizeof(mat4));
+    mat4 pvm; glm_mat4_mul(pv, m, pvm);
+    float depth;
+    float ycoord = viewPort[3] - screenPos[1] - 1;
+    glReadPixels(screenPos[0],  ycoord, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
+    vec3 mposf = {screenPos[0], ycoord, depth};
+    
+    glm_unproject(mposf, pvm, viewPort, dst);
+}
+
+void CMD_SetBlockWorldSpace(
+    CMD_ChunkMesh* mesh, 
+    CMD_Chunk* chunk, 
+    vec2 viewportPos, 
+    GPI_Camera* camera, 
+    CMD_BlockType* block, 
+    CMD_BLOCKSETFUNC placementFunc)
+{
+    vec3 blockPos;
+    CMD_ScreenToOpenGL(viewportPos, camera, NULL, blockPos);
+    float ox = blockPos[0] - floorf(blockPos[0]);
+    float oy = blockPos[1] - floorf(blockPos[1]);
+    float oz = blockPos[2] - floorf(blockPos[2]);
+    placementFunc(mesh, chunk, blockPos, block);
+}
 
 void CMD_RegenerateChunkMesh(CMD_ChunkMesh* dst, CMD_Chunk* chunk)
 {

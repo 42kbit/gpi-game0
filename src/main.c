@@ -26,6 +26,8 @@
 
 #include "CMD_ChunkRenderer.h"
 
+#include "project.h"
+
 static void GPI_SetUniformBlock(GPI_Shader* target, char* blockName, uint8_t index)
 {
     uint32_t loc = glGetUniformBlockIndex(target->glID, blockName);
@@ -38,7 +40,7 @@ static void GPI_SetUniformBlock(GPI_Shader* target, char* blockName, uint8_t ind
 int main(){
     SDL_Init(SDL_INIT_EVERYTHING);
 
-    const uint32_t WIDTH = 800, HEIGHT = 600;
+    const uint32_t WIDTH = 1280, HEIGHT = 800;
     const float aspectRaito = (float)WIDTH / HEIGHT;
     const uint32_t FPS_LIMIT = 121;
 
@@ -102,6 +104,10 @@ int main(){
         GL_ELEMENT_ARRAY_BUFFER, CMD_CHUNK_COUNT_ALL*36*sizeof(uint32_t), GL_DYNAMIC_DRAW, &CMD_ChunkLayout); 
     CMD_RegenerateChunkMesh(&chunkMesh, &c);
     
+    CMD_BlockType* blocks[3] = {&CMD_AirBlock, &CMD_StoneBlock, &CMD_GrassBlock};
+    uint32_t blocksTop = 0;
+    CMD_BlockType* selectedBlock = blocks[blocksTop];
+
     while(!shouldClose)
     {
         uint32_t lastTime = SDL_GetTicks();
@@ -113,8 +119,6 @@ int main(){
         
         vec3 camdx; glm_vec3_scale(camera.forward, moveSpeed * 0.f, camdx);
         GPI_MoveCamera(&camera, camdx);
-
-        memset(input.deltaMouse, 0, sizeof(vec2));
 
         mat4 proj; GPI_GetCameraProjection(&camera, aspectRaito, proj);
         mat4 view; GPI_GetCameraView(&camera, view);
@@ -166,24 +170,21 @@ int main(){
             glDisable(GL_CULL_FACE);
         else
             glEnable(GL_CULL_FACE);
-        if(input.held[SDL_SCANCODE_KP_0])
+
+        if(input.mouseButtonPressed == SDL_BUTTON_RIGHT)
         {
-            CMD_SetBlockUpdatable(&chunkMesh, &c, camera.position, &CMD_AirBlock);
+            selectedBlock = blocks[blocksTop % 3];
+            blocksTop++;
         }
-        if(input.held[SDL_SCANCODE_KP_1])
+        if(input.mouseButtonPressed == SDL_BUTTON_LEFT)
         {
-            CMD_SetBlockUpdatable(&chunkMesh, &c, camera.position, &CMD_GrassBlock);
-        }
-        if(input.held[SDL_SCANCODE_KP_2])
-        {
-            CMD_SetBlockUpdatable(&chunkMesh, &c, camera.position, &CMD_StoneBlock);
+            vec2 vpPos = {WIDTH/2, HEIGHT/2};
+            CMD_SetBlockWorldSpace(&chunkMesh, &c, vpPos, &camera, selectedBlock, CMD_BLOCKPLACEMENT_FUNC);
         }
 
         eulerCamRotation[0] += -input.deltaMouse[1] * sensitivity;
         eulerCamRotation[1] += -input.deltaMouse[0] * sensitivity;
-
         //rendering
-
         GPI_BindShader(&CMD_ChunkShader);
         int32_t samplers[32];
         for(uint32_t i = 0; i < 32; ++i)
