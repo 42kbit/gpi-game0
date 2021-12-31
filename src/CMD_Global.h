@@ -22,6 +22,8 @@ extern GPI_Buffer CMD_ChunkIBO;
 extern GPI_Shader CMD_ChunkShader;
 extern GPI_VertexLayout CMD_ChunkLayout;
 
+extern GPI_Buffer CMD_ProjectionViewUniformBlock;
+
 extern CMD_BLOCKSETFUNC CMD_BLOCKPLACEMENT_FUNC;
 
 extern const CMD_BlockType CMD_AirBlock;

@@ -222,6 +222,13 @@ void CMD_SetBlockUpdatable(CMD_ChunkMesh* mesh, CMD_Chunk* chunk, vec3 pos, CMD_
     CMD_PushChunkVBOData(mesh);
 }
 
+static void GPI_SetUniformBlock(GPI_Shader* target, char* blockName, uint8_t index)
+{
+    uint32_t loc = glGetUniformBlockIndex(target->glID, blockName);
+    if(loc != GL_INVALID_INDEX)
+        glUniformBlockBinding(target->glID, loc, index);
+}
+
 void CMD_RenderChunkMesh(CMD_ChunkMesh* mesh, vec3 pos)
 {
     GPI_BindVertexArray(&mesh->vao);
@@ -230,7 +237,27 @@ void CMD_RenderChunkMesh(CMD_ChunkMesh* mesh, vec3 pos)
     GPI_BindBuffer(&mesh->ibo);
 
     GPI_BindShader(&CMD_ChunkShader);
-    int32_t loc = GPI_GetUniformLocation(&CMD_ChunkShader, "u_ChunkPosition");
+    int32_t samplers[32];
+    for(uint32_t i = 0; i < 32; ++i)
+        samplers[i] = i;
+    int32_t loc = GPI_GetUniformLocation(&CMD_ChunkShader, "u_Textures");
+    if(loc != -1)
+        glUniform1iv(loc, 32, samplers);
+    glBindTextureUnit(0, CMD_TextureAtlases[0].glID);
+    const uint8_t index = 0;
+    glBindBufferRange(
+        CMD_ProjectionViewUniformBlock.TYPE, 
+        index, 
+        CMD_ProjectionViewUniformBlock.glID, 
+        0, 
+        sizeof(mat4)*2);
+    GPI_SetUniformBlock(&CMD_ChunkShader, "ProjectionView", index);
+    
+    mat4 model; glm_mat4_identity(model);
+    loc = GPI_GetUniformLocation(&CMD_ChunkShader, "u_Model");
+    if(loc != -1)
+        glUniformMatrix4fv(loc, 1, GL_FALSE, model);
+    loc = GPI_GetUniformLocation(&CMD_ChunkShader, "u_ChunkPosition");
     if(loc != -1)
         glUniform3f(loc, pos[0], pos[1], pos[2]);
     glDrawElements(

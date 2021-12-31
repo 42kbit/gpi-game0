@@ -28,15 +28,6 @@
 
 #include "project.h"
 
-static void GPI_SetUniformBlock(GPI_Shader* target, char* blockName, uint8_t index)
-{
-    uint32_t loc = glGetUniformBlockIndex(target->glID, blockName);
-    if(loc != GL_INVALID_INDEX)
-        glUniformBlockBinding(target->glID, loc, index);
-    else
-        exit(0);
-}
-
 int main(){
     SDL_Init(SDL_INIT_EVERYTHING);
 
@@ -64,8 +55,6 @@ int main(){
     "Graphics Card: %s\n", glGetString(GL_VERSION), glGetString(GL_RENDERER));
     CMD_Init();
     glEnable(GL_DEPTH_TEST);
-
-    GPI_Buffer ubo = GPI_CreateBuffer(GL_UNIFORM_BUFFER, sizeof(mat4)*2, NULL, GL_DYNAMIC_DRAW);
 
     vec3 campos = {8.f, 130.0f, 8.f};
     GPI_Camera camera = GPI_CreateCamera(glm_rad(45.f), aspectRaito, campos);
@@ -108,6 +97,8 @@ int main(){
     uint32_t blocksTop = 0;
     CMD_BlockType* selectedBlock = blocks[blocksTop];
 
+    
+
     while(!shouldClose)
     {
         uint32_t lastTime = SDL_GetTicks();
@@ -123,10 +114,10 @@ int main(){
         mat4 proj; GPI_GetCameraProjection(&camera, aspectRaito, proj);
         mat4 view; GPI_GetCameraView(&camera, view);
         
-        GPI_BindBuffer(&ubo);
-            glBufferSubData(ubo.TYPE, 0, sizeof(mat4), &proj);
-            glBufferSubData(ubo.TYPE, sizeof(mat4), sizeof(mat4), &view);
-        GPI_UnbindBuffer(&ubo);
+        GPI_BindBuffer(&CMD_ProjectionViewUniformBlock);
+            glBufferSubData(CMD_ProjectionViewUniformBlock.TYPE, 0, sizeof(mat4), &proj);
+            glBufferSubData(CMD_ProjectionViewUniformBlock.TYPE, sizeof(mat4), sizeof(mat4), &view);
+        GPI_UnbindBuffer(&CMD_ProjectionViewUniformBlock);
     
         CMD_PollEvents(&input);
         if(input.held[SDL_SCANCODE_ESCAPE])
@@ -184,26 +175,6 @@ int main(){
 
         eulerCamRotation[0] += -input.deltaMouse[1] * sensitivity;
         eulerCamRotation[1] += -input.deltaMouse[0] * sensitivity;
-        //rendering
-        GPI_BindShader(&CMD_ChunkShader);
-        int32_t samplers[32];
-        for(uint32_t i = 0; i < 32; ++i)
-            samplers[i] = i;
-        int32_t loc = GPI_GetUniformLocation(&CMD_ChunkShader, "u_Textures");
-        if(loc != -1)
-            glUniform1iv(loc, 32, samplers);
-        glBindTextureUnit(0, CMD_TextureAtlases[0].glID);
-        glBindTextureUnit(1, tuxTexture.glID);
-
-        const uint8_t index = 0;
-        glBindBufferRange(ubo.TYPE, index, ubo.glID, 0, sizeof(mat4)*2);
-
-        GPI_SetUniformBlock(&CMD_ChunkShader, "ProjectionView", index);
-        
-        mat4 model; glm_mat4_identity(model);
-        loc = GPI_GetUniformLocation(&CMD_ChunkShader, "u_Model");
-        if(loc != -1)
-            glUniformMatrix4fv(loc, 1, GL_FALSE, model);
 
         glClearColor(0.7,1,1,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

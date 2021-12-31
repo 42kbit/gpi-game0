@@ -8,6 +8,7 @@ GPI_Shader CMD_ChunkShader;
 GPI_VertexLayout CMD_ChunkLayout;
 
 GPI_Texture* CMD_TextureAtlases;
+GPI_Buffer CMD_ProjectionViewUniformBlock;
 
 void (*CMD_BLOCKPLACEMENT_FUNC)(CMD_ChunkMesh*, CMD_Chunk*, vec3, CMD_BlockType*);
 
@@ -38,6 +39,7 @@ void CMD_Init()
     CMD_TextureAtlases[0] = GPI_CreateTexture("res/textures/atlas0.png", GL_CLAMP_TO_BORDER, GL_NEAREST, GL_TEXTURE_2D);
 
     CMD_BLOCKPLACEMENT_FUNC = CMD_SetBlockUpdatable;
+    CMD_ProjectionViewUniformBlock = GPI_CreateBuffer(GL_UNIFORM_BUFFER, sizeof(mat4)*2, NULL, GL_DYNAMIC_DRAW);
 }
 
 void CMD_Quit()
