@@ -4,6 +4,7 @@
 #include <inttypes.h>
 
 #define CMD_BLOCK_TRANSPARENCY_MASK 0b00000001
+#define CMD_BLOCK_NEGATION_MASK 0b00000010
 
 typedef struct {
     uint32_t blockID;

@@ -52,8 +52,8 @@ const uint32_t CMD_PROJECTION_VIEW_UNIFORMBLOCK_INDEX = 0;
 const uint32_t CMD_CHUNK_RENDERER_SLICE_COUNT = 4;
 
 const CMD_BlockType CMD_AirBlock =   {0, CMD_BLOCK_TRANSPARENCY_MASK};
-const CMD_BlockType CMD_StoneBlock = {1, 0};
-const CMD_BlockType CMD_GrassBlock = {2, 0};
+const CMD_BlockType CMD_StoneBlock = {1, CMD_BLOCK_NEGATION_MASK};
+const CMD_BlockType CMD_GrassBlock = {2, CMD_BLOCK_NEGATION_MASK};
 const uint8_t CMD_VOXEL_VERTECIES[] = 
 { 
     //+x

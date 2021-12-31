@@ -40,7 +40,7 @@ static void GPI_SetUniformBlock(GPI_Shader* target, char* blockName, uint8_t ind
 int main(){
     SDL_Init(SDL_INIT_EVERYTHING);
 
-    const uint32_t WIDTH = 1280, HEIGHT = 800;
+    const uint32_t WIDTH = 800, HEIGHT = 600;
     const float aspectRaito = (float)WIDTH / HEIGHT;
     const uint32_t FPS_LIMIT = 121;
 

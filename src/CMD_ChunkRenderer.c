@@ -132,6 +132,17 @@ static void CMD_ScreenToOpenGL(vec2 screenPos, GPI_Camera* camera, mat4 model, v
     glm_unproject(mposf, pvm, viewPort, dst);
 }
 
+#define MIN(a,b) (a > b? b : a)
+#define MAX(a,b) (a > b? a : b)
+
+static float CMD_GetMin4F(vec4 value){
+    float result = 10000.f;
+    for(uint32_t i = 0; i < 3; i++)
+    {
+        result = MIN(value[i], value[i+1]);
+    }
+}
+
 void CMD_SetBlockWorldSpace(
     CMD_ChunkMesh* mesh, 
     CMD_Chunk* chunk, 
@@ -142,10 +153,13 @@ void CMD_SetBlockWorldSpace(
 {
     vec3 blockPos;
     CMD_ScreenToOpenGL(viewportPos, camera, NULL, blockPos);
-    float ox = blockPos[0] - floorf(blockPos[0]);
-    float oy = blockPos[1] - floorf(blockPos[1]);
-    float oz = blockPos[2] - floorf(blockPos[2]);
-    placementFunc(mesh, chunk, blockPos, block);
+    vec3 dst;
+    vec3 scaledCam;
+    glm_vec3_scale(camera->forward, 0.1f, scaledCam);
+    if(block->flags & CMD_BLOCK_NEGATION_MASK)
+        glm_vec3_negate(scaledCam);
+    glm_vec3_add(blockPos, scaledCam, dst);
+    placementFunc(mesh, chunk, dst, block);
 }
 
 void CMD_RegenerateChunkMesh(CMD_ChunkMesh* dst, CMD_Chunk* chunk)
