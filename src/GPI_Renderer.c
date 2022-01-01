@@ -1,6 +1,7 @@
 #include "GPI_Renderer.h"
 
 #include "glad/glad.h"
+#include <stddef.h>
 
 void GPI_DrawBuffers(GPI_Buffer* vertexBuffer, GPI_Buffer* indexBuffer, uint32_t indexBufferCnt, GPI_VertexLayout* layout)
 {

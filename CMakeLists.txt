@@ -19,11 +19,13 @@ src/GPI_VertexArray.c
 src/GPI_Camera.c
 )
 
-add_subdirectory(external/glad)
-target_link_libraries(${PROJECT_NAME} glad)
+find_package(SDL2 REQUIRED)
+include_directories(${SDL2_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME}  ${SDL2_LIBRARIES})
 
-add_subdirectory(external/SDL2)
-target_link_libraries(${PROJECT_NAME} SDL2)
+add_subdirectory(external/glad)
+target_link_libraries(${PROJECT_NAME} glad -ldl)
+
 
 add_subdirectory(external/cglm)
 
