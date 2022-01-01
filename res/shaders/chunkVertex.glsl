@@ -13,7 +13,7 @@ layout (std140) uniform ProjectionView
 } u_ProjectionView;
 
 uniform mat4 u_Model;
-uniform vec3 u_ChunkPosition;
+uniform int u_ChunkPosition[3];
 
 vec2 texCoords[4] = vec2[4]
 (
@@ -31,8 +31,8 @@ void main()
     v_TexCoords = texCoords[(a_Data0 & 0x00001800) >> 11];
     v_TexIndex = (a_Data0 & 0x000007F8) >> 3;
     gl_Position = u_ProjectionView.projection * u_ProjectionView.view * u_Model * vec4(
-        posX + u_ChunkPosition.x, 
-        posY + u_ChunkPosition.y,
-        posZ + u_ChunkPosition.z, 1.f);
+        posX + u_ChunkPosition[0], 
+        posY + u_ChunkPosition[1],
+        posZ + u_ChunkPosition[2], 1.f);
     
 }

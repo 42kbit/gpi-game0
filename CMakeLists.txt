@@ -10,10 +10,11 @@ src/CMD_Input.c
 src/CMD_Window.c
 src/CMD_BatchRenderer.c
 src/CMD_VertexTypes.c
-src/CMD_Chunk.c
+src/CMD_ChunkData.c
 src/CMD_ChunkRenderer.c
 src/CMD_Global.c
 src/CMD_Meshes.c
+src/CMD_World.c
 )
 
 add_subdirectory(external/gpi)

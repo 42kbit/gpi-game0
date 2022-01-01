@@ -1,5 +1,5 @@
 #include "CMD_Global.h"
-#include "CMD_Chunk.h"
+#include "CMD_ChunkData.h"
 #include "CMD_VertexTypes.h"
 #include <malloc.h>
 
@@ -10,7 +10,7 @@ GPI_VertexLayout CMD_ChunkLayout;
 GPI_Texture* CMD_TextureAtlases;
 GPI_Buffer CMD_ProjectionViewUniformBlock;
 
-void (*CMD_BLOCKPLACEMENT_FUNC)(CMD_ChunkMesh*, CMD_Chunk*, vec3, CMD_BlockType*);
+void (*CMD_BLOCKPLACEMENT_FUNC)(CMD_ChunkMesh*, CMD_ChunkData*, vec3, CMD_BlockType*);
 
 void CMD_Init()
 {

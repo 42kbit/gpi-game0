@@ -19,7 +19,7 @@
 #include "CMD_VertexTypes.h"
 #include "CMD_BatchRenderer.h"
 
-#include "CMD_Chunk.h"
+#include "CMD_ChunkData.h"
 
 #include "CMD_Global.h"
 #include "CMD_Meshes.h"
@@ -27,6 +27,8 @@
 #include "CMD_ChunkRenderer.h"
 
 #include "project.h"
+
+#include "CMD_World.h"
 
 int main(){
     SDL_Init(SDL_INIT_EVERYTHING);
@@ -66,39 +68,27 @@ int main(){
 
     const float sensitivity = 0.1f;
     const float moveSpeed = 3.f;
-
-    vec3 cp = {0,0,0};
-    CMD_Chunk c = CMD_CreateChunk(cp);
-    for(uint32_t i = 0; i < CMD_CHUNK_COUNT_ALL; i++)
-        c.blocks[i] = &CMD_AirBlock;
-
-    for(uint32_t px = 0; px < CMD_CHUNK_COUNT_X; px++)
-    for(uint32_t py = 0; py < CMD_CHUNK_COUNT_Y/2-2; py++)
-    for(uint32_t pz = 0; pz < CMD_CHUNK_COUNT_Z; pz++)
-    {
-        vec3 blockPos = {px, py, pz};
-        uint32_t index = CMD_GetParrayOffset(blockPos);
-        c.blocks[index] = &CMD_StoneBlock;
-    }
-    for(uint32_t px = 0; px < CMD_CHUNK_COUNT_X; px++)
-    for(uint32_t py = CMD_CHUNK_COUNT_Y/2-2; py < CMD_CHUNK_COUNT_Y/2; py++)
-    for(uint32_t pz = 0; pz < CMD_CHUNK_COUNT_Z; pz++)
-    {
-        vec3 blockPos = {px, py, pz};
-        uint32_t index = CMD_GetParrayOffset(blockPos);
-        c.blocks[index] = &CMD_GrassBlock;
-    }
-    CMD_ChunkMesh chunkMesh = CMD_CreateMesh(
-        GL_ARRAY_BUFFER, CMD_CHUNK_COUNT_ALL*24*sizeof(CMD_ChunkVertex), GL_DYNAMIC_DRAW,
-        GL_ELEMENT_ARRAY_BUFFER, CMD_CHUNK_COUNT_ALL*36*sizeof(uint32_t), GL_DYNAMIC_DRAW, &CMD_ChunkLayout); 
-    CMD_RegenerateChunkMesh(&chunkMesh, &c);
     
     CMD_BlockType* blocks[3] = {&CMD_AirBlock, &CMD_StoneBlock, &CMD_GrassBlock};
     uint32_t blocksTop = 0;
     CMD_BlockType* selectedBlock = blocks[blocksTop];
-
     
+    uint32_t cpos[3] = {0,0,0};
+    CMD_ChunkData basicTerrain = CMD_CreateChunkData(cpos);
+    for(uint32_t i = 0; i < CMD_CHUNK_COUNT_ALL; i++)
+        basicTerrain.blocks[i] = &CMD_AirBlock;
+    for(uint32_t x = 0; x < CMD_CHUNK_COUNT_X; x++)
+        for(uint32_t y = 0; y < CMD_CHUNK_COUNT_Y / 2; y++)
+            for(uint32_t z = 0; z < CMD_CHUNK_COUNT_Z; z++)
+            {
+                vec3 pos = {x,y,z};
+                basicTerrain.blocks[CMD_GetParrayOffset(pos)] = &CMD_GrassBlock;
+            }
 
+    CMD_World world; CMD_CreateWorld(&world);
+    CMD_Chunk* chunk;
+    CMD_AllocateEmptyChunk(&world, &chunk);
+    CMD_PushChunkData(chunk, &basicTerrain);
     while(!shouldClose)
     {
         uint32_t lastTime = SDL_GetTicks();
@@ -170,7 +160,7 @@ int main(){
         if(input.mouseButtonPressed == SDL_BUTTON_LEFT)
         {
             vec2 vpPos = {WIDTH/2, HEIGHT/2};
-            CMD_SetBlockWorldSpace(&chunkMesh, &c, vpPos, &camera, selectedBlock, CMD_BLOCKPLACEMENT_FUNC);
+            //CMD_SetBlockWorldSpace(&chunkMesh, &c, vpPos, &camera, selectedBlock, CMD_BLOCKPLACEMENT_FUNC);
         }
 
         eulerCamRotation[0] += -input.deltaMouse[1] * sensitivity;
@@ -179,7 +169,7 @@ int main(){
         glClearColor(0.7,1,1,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        CMD_RenderChunkMesh(&chunkMesh, c.position);
+        CMD_RenderAllChunks(&world);
 
         SDL_GL_SwapWindow(window);
 

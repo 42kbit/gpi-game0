@@ -14,9 +14,9 @@ static vec3 opz = {0,0,1};
 static vec3 onz = {0,0,-1}; 
 static vec3* direcions[6] = {opx, onx, opy, ony, opz, onz};
 
-static uint8_t CMD_DrawSide(CMD_Chunk* c, vec3 pos, vec3 offset)
+static uint8_t CMD_DrawSide(CMD_ChunkData* c, vec3 pos, vec3 offset)
 {
-    if(!CMD_IsInChunkOffset(pos, offset)) return c->blocks[CMD_GetParrayOffset(pos)]->flags?  0 : 1;
+    if(!CMD_IsInChunkOffset(pos, offset)) return 0;//c->blocks[CMD_GetParrayOffset(pos)]->flags & CMD_BLOCK_TRANSPARENCY_MASK?  0;
     uint32_t currentBlockpos = (uint32_t)(pos[0])*CMD_CHUNK_COUNT_Y*CMD_CHUNK_COUNT_Z + (uint32_t)(pos[1])*CMD_CHUNK_COUNT_Z +(uint32_t)(pos[2]);
     uint32_t arraypos = (uint32_t)(pos[0]+offset[0])*CMD_CHUNK_COUNT_Y*CMD_CHUNK_COUNT_Z + (uint32_t)(pos[1]+offset[1])*CMD_CHUNK_COUNT_Z +(uint32_t)(pos[2]+offset[2]);
     return !(c->blocks[currentBlockpos]->flags & CMD_BLOCK_TRANSPARENCY_MASK) && (c->blocks[arraypos]->flags & CMD_BLOCK_TRANSPARENCY_MASK);
@@ -68,7 +68,7 @@ static void CMD_RemoveQuadFromMesh(CMD_ChunkMesh* target, CMD_ChunkVertex* pLoca
     target->verticesTop -= 4;
 }
 
-static void CMD_RecalculateMesh(CMD_ChunkMesh* mesh, CMD_Chunk* chunk, vec3 pos)
+static void CMD_RecalculateMesh(CMD_ChunkMesh* mesh, CMD_ChunkData* chunk, vec3 pos)
 {
     CMD_ChunkVertex vertecies[24];
     memset(vertecies, 0, sizeof(CMD_ChunkVertex)*4);
@@ -145,7 +145,7 @@ static float CMD_GetMin4F(vec4 value){
 
 void CMD_SetBlockWorldSpace(
     CMD_ChunkMesh* mesh, 
-    CMD_Chunk* chunk, 
+    CMD_ChunkData* chunk, 
     vec2 viewportPos, 
     GPI_Camera* camera, 
     CMD_BlockType* block, 
@@ -162,7 +162,7 @@ void CMD_SetBlockWorldSpace(
     placementFunc(mesh, chunk, dst, block);
 }
 
-void CMD_RegenerateChunkMesh(CMD_ChunkMesh* dst, CMD_Chunk* chunk)
+void CMD_RegenerateChunkMesh(CMD_ChunkMesh* dst, CMD_ChunkData* chunk)
 {
     dst->iboTop = 0;
     dst->verticesTop = 0;
@@ -192,7 +192,7 @@ void CMD_RegenerateChunkMesh(CMD_ChunkMesh* dst, CMD_Chunk* chunk)
     CMD_PushChunkVBOData(dst);    
 }
 
-void CMD_SetBlockRegenerate(CMD_ChunkMesh* mesh, CMD_Chunk* chunk, vec3 pos, CMD_BlockType* block)
+void CMD_SetBlockRegenerate(CMD_ChunkMesh* mesh, CMD_ChunkData* chunk, vec3 pos, CMD_BlockType* block)
 {
     if(!CMD_IsInChunk(pos))
         return;
@@ -203,7 +203,7 @@ void CMD_SetBlockRegenerate(CMD_ChunkMesh* mesh, CMD_Chunk* chunk, vec3 pos, CMD
     CMD_RegenerateChunkMesh(mesh, chunk);
 }
 
-void CMD_SetBlockUpdatable(CMD_ChunkMesh* mesh, CMD_Chunk* chunk, vec3 pos, CMD_BlockType* block)
+void CMD_SetBlockUpdatable(CMD_ChunkMesh* mesh, CMD_ChunkData* chunk, vec3 pos, CMD_BlockType* block)
 {
     if(!CMD_IsInChunk(pos))
         return;
@@ -229,7 +229,7 @@ static void GPI_SetUniformBlock(GPI_Shader* target, char* blockName, uint8_t ind
         glUniformBlockBinding(target->glID, loc, index);
 }
 
-void CMD_RenderChunkMesh(CMD_ChunkMesh* mesh, vec3 pos)
+void CMD_RenderChunkMesh(CMD_ChunkMesh* mesh, CMD_ChunkData* data)
 {
     GPI_BindVertexArray(&mesh->vao);
     GPI_BindVertexArrayAttribs(&mesh->vao);
@@ -259,7 +259,7 @@ void CMD_RenderChunkMesh(CMD_ChunkMesh* mesh, vec3 pos)
         glUniformMatrix4fv(loc, 1, GL_FALSE, model);
     loc = GPI_GetUniformLocation(&CMD_ChunkShader, "u_ChunkPosition");
     if(loc != -1)
-        glUniform3f(loc, pos[0], pos[1], pos[2]);
+        glUniform1iv(loc, 3, data->position);
     glDrawElements(
         GL_TRIANGLES,
         mesh->iboTop, 
