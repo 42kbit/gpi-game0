@@ -25,7 +25,7 @@ target_include_directories(${PROJECT_NAME}
  PUBLIC external/gpi/external/SDL2/include
  PUBLIC external/gpi/external/glad/include)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC gpi)
+target_link_libraries(${PROJECT_NAME} PUBLIC gpi -lm)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)
 
