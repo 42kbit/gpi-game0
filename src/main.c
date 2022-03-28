@@ -160,7 +160,7 @@ int main(){
         if(input.mouseButtonPressed == SDL_BUTTON_LEFT)
         {
             vec2 vpPos = {WIDTH/2, HEIGHT/2};
-            //CMD_SetBlockWorldSpace(&chunkMesh, &c, vpPos, &camera, selectedBlock, CMD_BLOCKPLACEMENT_FUNC);
+            CMD_SetBlockWorldSpace(&world.loadedChunks[0].chunkMesh, &world.loadedChunks[0].chunkData, vpPos, &camera, selectedBlock, CMD_BLOCKPLACEMENT_FUNC);
         }
 
         eulerCamRotation[0] += -input.deltaMouse[1] * sensitivity;
